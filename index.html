@@ -947,10 +947,11 @@ background:transparent;
           <p id="formViewerSubtitle">Complete los campos requeridos</p>
         </div>
         
-     <div class="state-content" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+        <div class="state-content" style="padding: 0; overflow: hidden;">
           <iframe id="formIframe" 
-                  style="flex: 1; width: 100%; min-height: 100vh; border: none;"
-                  allow="camera; microphone; geolocation">
+                  style="width: 100%; height: 100%; border: none;"
+                  sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-top-navigation"
+                  allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture">
           </iframe>
         </div>
         
@@ -1542,40 +1543,34 @@ background:transparent;
 
     </div> <script>
       // ========== MOTOR DE CONEXIÓN PWA ==========
-      const API_URL = "https://script.google.com/macros/s/AKfycbwrxsgvk-r_1T7Qxo5W1dqnCcKxnNQQZJ1EkMWOtl5TBzmIqCUKg0A2Q9f1DA4E0jvp/exec";
+      const API_URL = "https://script.google.com/macros/s/TU_NUEVO_ID_DE_DESPLIEGUE_AQUI/exec";
 
-async function llamarBackend(accion, parametros = []) {
-  const payload = {
-    action: accion,
-    data: parametros
-  };
+      async function llamarBackend(accion, parametros = []) {
+        const payload = {
+          action: accion,
+          data: parametros,
+          user: window.userData ? window.userData.usuario : 'Desconocido'
+        };
 
-  try {
-    const respuesta = await fetch(API_URL, {
-      method: 'POST',
-      mode: 'cors',
-      body: JSON.stringify(payload) // Al omitir headers complejos, el navegador lo envía como texto simple evitando el bloqueo CORS preflight
-    });
-    
-    const text = await respuesta.text();
-    
-    // Validación de seguridad si el servidor responde con un error HTML en lugar de JSON
-    if (!text.trim().startsWith('{')) {
-      console.error("Respuesta inválida del servidor:", text);
-      throw new Error("El servidor de Google devolvió una respuesta corrupta. Verifica los permisos de la implementación.");
-    }
-    
-    const json = JSON.parse(text);
-    if (json.success) {
-      return json.data;
-    } else {
-      throw new Error(json.error || "Error interno en el servidor");
-    }
-  } catch (error) {
-    console.error("Error en la llamada a " + accion + ":", error);
-    throw error;
-  }
-}
+        try {
+          const respuesta = await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+          });
+          const json = await respuesta.json();
+          if (json.success) {
+            if (json.data && json.data.success !== undefined) {
+              return json.data;
+            }
+            return json.data;
+          } else {
+            throw new Error(json.error);
+          }
+        } catch (error) {
+          console.error("Error en la llamada a " + accion + ":", error);
+          throw error;
+        }
+      }
 
       // Variable para almacenar datos del usuario
       let userData = null;
@@ -3759,40 +3754,12 @@ function iniciarVisitaExistente(codigo, nombre, fecha, hora) {
       });
   }
 
- function verificarAccesoFormulario(formularioId) {
+  function verificarAccesoFormulario(formularioId) {
+  // Guardar el ID del formulario seleccionado
   formularioActual = {
     tipo: formularioId,
     visita: null
   };
-  
-  const loadingModal = mostrarModalCarga('Verificando accesos...');
-  
-  // Ahora TODOS los formularios le preguntan al backend si tienen permiso
-  llamarBackend('verificarAccesoFormulario', [formularioId, userData.usuario])
-    .then(function(response) {
-      cerrarModalCarga(); // Quitamos el modal de carga
-      
-      if (response.success) {
-        if (response.permitido) {
-          // Si el servidor dice que SÍ, abrimos el formulario
-          if (response.visita) {
-            abrirFormularioInterno(formularioId, response.visita);
-          } else {
-            abrirFormularioInterno(formularioId, null);
-          }
-        } else {
-          // Si el servidor dice que NO (ej. falta visita activa)
-          mostrarMensaje(response.mensaje, 'error', 'formsState');
-        }
-      } else {
-        mostrarMensaje('Error: ' + response.mensaje, 'error', 'formsState');
-      }
-    })
-    .catch(function(error) {
-      cerrarModalCarga();
-      mostrarMensaje('Error de conexión: ' + error.message, 'error', 'formsState');
-    });
-}
   
   // Para los formularios core, mantener compatibilidad con IDs antiguos
   const esFormularioCore = ['gastosViaje', 'actividades', 'asesoriaPresencial', 'asesoriaVirtual', 'inspeccion'].includes(formularioId);
@@ -6698,7 +6665,14 @@ document.getElementById('backFromForms').addEventListener('click', function() {
 });
       
       // ========== UTILIDADES ==========
-     
+      document.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && e.target.type !== 'textarea') {
+          const activeState = document.querySelector('.app-state.active');
+          if (activeState && activeState.id === 'loginState' && !document.getElementById('btnLogin').disabled) {
+            document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+          }
+        }
+      });
       
       document.querySelectorAll('a').forEach(link => {
         link.addEventListener('click', function(e) {
