@@ -1547,32 +1547,37 @@ background:transparent;
       // ========== MOTOR DE CONEXIÓN PWA ==========
       const API_URL = "https://script.google.com/macros/s/AKfycbwrxsgvk-r_1T7Qxo5W1dqnCcKxnNQQZJ1EkMWOtl5TBzmIqCUKg0A2Q9f1DA4E0jvp/exec";
 
-      async function llamarBackend(accion, parametros = []) {
-        const payload = {
-          action: accion,
-          data: parametros,
-          user: window.userData ? window.userData.usuario : 'Desconocido'
-        };
+ async function llamarBackend(accion, parametros = []) {
+  const payload = {
+    action: accion,
+    data: parametros,
+    user: window.userData ? window.userData.usuario : 'Desconocido'
+  };
 
-        try {
-          const respuesta = await fetch(API_URL, {
-            method: 'POST',
-            body: JSON.stringify(payload)
-          });
-          const json = await respuesta.json();
-          if (json.success) {
-            if (json.data && json.data.success !== undefined) {
-              return json.data;
-            }
-            return json.data;
-          } else {
-            throw new Error(json.error);
-          }
-        } catch (error) {
-          console.error("Error en la llamada a " + accion + ":", error);
-          throw error;
-        }
+  try {
+    const respuesta = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8' // 🔥 ESTO EVITA EL BLOQUEO DE GOOGLE (CORS)
+      },
+      body: JSON.stringify(payload)
+    });
+    
+    const json = await respuesta.json();
+    
+    if (json.success) {
+      if (json.data && json.data.success !== undefined) {
+        return json.data;
       }
+      return json.data;
+    } else {
+      throw new Error(json.error);
+    }
+  } catch (error) {
+    console.error("Error en la llamada a " + accion + ":", error);
+    throw error;
+  }
+}
 
       // Variable para almacenar datos del usuario
       let userData = null;
@@ -6695,14 +6700,7 @@ document.getElementById('backFromForms').addEventListener('click', function() {
 });
       
       // ========== UTILIDADES ==========
-      document.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter' && e.target.type !== 'textarea') {
-          const activeState = document.querySelector('.app-state.active');
-          if (activeState && activeState.id === 'loginState' && !document.getElementById('btnLogin').disabled) {
-            document.getElementById('loginForm').dispatchEvent(new Event('submit'));
-          }
-        }
-      });
+     
       
       document.querySelectorAll('a').forEach(link => {
         link.addEventListener('click', function(e) {
