@@ -28,7 +28,17 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  if (e.request.url.includes('script.google.com')) return;
+  // 🔥 CRÍTICO: Si la petición NO es un GET (como el POST de iniciar sesión o guardar formularios), 
+  // la dejamos pasar libremente al navegador sin que el Service Worker la toque.
+  if (e.request.method !== 'GET') {
+    return; 
+  }
+
+  // Ignorar por completo las APIs de Google
+  if (e.request.url.includes('script.google.com') || e.request.url.includes('script.googleusercontent.com')) {
+    return;
+  }
+
   e.respondWith(
     caches.match(e.request).then(cachedResponse => {
       return cachedResponse || fetch(e.request);
