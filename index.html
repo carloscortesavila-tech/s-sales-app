@@ -5,6 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema Central por NIT</title>
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#1e3a8a">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2906/2906247.png">
 <style>
 :root{
 --primary:#1e3a8a;
@@ -947,11 +950,10 @@ background:transparent;
           <p id="formViewerSubtitle">Complete los campos requeridos</p>
         </div>
         
-        <div class="state-content" style="padding: 0; overflow: hidden;">
+     <div class="state-content" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
           <iframe id="formIframe" 
-                  style="width: 100%; height: 100%; border: none;"
-                  sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-top-navigation"
-                  allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture">
+                  style="flex: 1; width: 100%; min-height: 100vh; border: none;"
+                  allow="camera; microphone; geolocation">
           </iframe>
         </div>
         
@@ -3754,12 +3756,40 @@ function iniciarVisitaExistente(codigo, nombre, fecha, hora) {
       });
   }
 
-  function verificarAccesoFormulario(formularioId) {
-  // Guardar el ID del formulario seleccionado
+ function verificarAccesoFormulario(formularioId) {
   formularioActual = {
     tipo: formularioId,
     visita: null
   };
+  
+  const loadingModal = mostrarModalCarga('Verificando accesos...');
+  
+  // Ahora TODOS los formularios le preguntan al backend si tienen permiso
+  llamarBackend('verificarAccesoFormulario', [formularioId, userData.usuario])
+    .then(function(response) {
+      cerrarModalCarga(); // Quitamos el modal de carga
+      
+      if (response.success) {
+        if (response.permitido) {
+          // Si el servidor dice que SÍ, abrimos el formulario
+          if (response.visita) {
+            abrirFormularioInterno(formularioId, response.visita);
+          } else {
+            abrirFormularioInterno(formularioId, null);
+          }
+        } else {
+          // Si el servidor dice que NO (ej. falta visita activa)
+          mostrarMensaje(response.mensaje, 'error', 'formsState');
+        }
+      } else {
+        mostrarMensaje('Error: ' + response.mensaje, 'error', 'formsState');
+      }
+    })
+    .catch(function(error) {
+      cerrarModalCarga();
+      mostrarMensaje('Error de conexión: ' + error.message, 'error', 'formsState');
+    });
+}
   
   // Para los formularios core, mantener compatibilidad con IDs antiguos
   const esFormularioCore = ['gastosViaje', 'actividades', 'asesoriaPresencial', 'asesoriaVirtual', 'inspeccion'].includes(formularioId);
