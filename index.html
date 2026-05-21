@@ -1547,31 +1547,32 @@ background:transparent;
       // ========== MOTOR DE CONEXIÓN PWA ==========
       const API_URL = "https://script.google.com/macros/s/AKfycbwrxsgvk-r_1T7Qxo5W1dqnCcKxnNQQZJ1EkMWOtl5TBzmIqCUKg0A2Q9f1DA4E0jvp/exec";
 
- async function llamarBackend(accion, parametros = []) {
+async function llamarBackend(accion, parametros = []) {
   const payload = {
     action: accion,
-    data: parametros,
-    user: window.userData ? window.userData.usuario : 'Desconocido'
+    data: parametros
   };
 
   try {
     const respuesta = await fetch(API_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'text/plain;charset=utf-8' // 🔥 ESTO EVITA EL BLOQUEO DE GOOGLE (CORS)
-      },
-      body: JSON.stringify(payload)
+      mode: 'cors',
+      body: JSON.stringify(payload) // Al omitir headers complejos, el navegador lo envía como texto simple evitando el bloqueo CORS preflight
     });
     
-    const json = await respuesta.json();
+    const text = await respuesta.text();
     
+    // Validación de seguridad si el servidor responde con un error HTML en lugar de JSON
+    if (!text.trim().startsWith('{')) {
+      console.error("Respuesta inválida del servidor:", text);
+      throw new Error("El servidor de Google devolvió una respuesta corrupta. Verifica los permisos de la implementación.");
+    }
+    
+    const json = JSON.parse(text);
     if (json.success) {
-      if (json.data && json.data.success !== undefined) {
-        return json.data;
-      }
       return json.data;
     } else {
-      throw new Error(json.error);
+      throw new Error(json.error || "Error interno en el servidor");
     }
   } catch (error) {
     console.error("Error en la llamada a " + accion + ":", error);
