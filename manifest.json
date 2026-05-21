@@ -1,0 +1,18 @@
+{
+  "name": "S-SALES Sistema Central",
+  "short_name": "S-SALES",
+  "description": "Aplicación de campo offline para asesores y supervisores",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#1e3a8a",
+  "theme_color": "#1e3a8a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2906/2906247.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    }
+  ]
+}
