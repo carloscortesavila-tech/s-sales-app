@@ -2271,26 +2271,20 @@ function actualizarMenuPorRol() {
     }
   }
   
-if (userData.rol === 'ADMIN' || userData.rol === 'SUPERVISOR') {
-    const btnSupervisar = document.getElementById('btnSupervisar');
-    if (btnSupervisar) {
-      const nuevoBtn = btnSupervisar.cloneNode(true);
-      btnSupervisar.parentNode.replaceChild(nuevoBtn, btnSupervisar);
-      nuevoBtn.addEventListener('click', function(e) {
+  if (userData.rol === 'ADMIN') {
+    const btnAdmin = document.getElementById('btnAdmin');
+    if (btnAdmin) {
+      const newBtnAdmin = btnAdmin.cloneNode(true);
+      btnAdmin.parentNode.replaceChild(newBtnAdmin, btnAdmin);
+      newBtnAdmin.addEventListener('click', function(e) {
         e.preventDefault();
-        document.getElementById('supervisionUser').textContent = userData.usuario;
-        document.getElementById('supervisionRol').textContent = userData.rol;
-        cambiarEstado('welcomeState', 'supervisionState', 'derecha');
-        
-        // 🔥 CORRECCIÓN: Se eliminó la función fantasma que crasheaba el módulo
-        setTimeout(function() {
-          iniciarTabsSupervision();
-          cargarSelectorSupervision();
-          cargarAsesoresParaSupervisor();
-        }, 300);
+        document.getElementById('adminUser').textContent = userData.usuario;
+        cambiarEstado('welcomeState', 'adminState', 'derecha');
+        cargarUsuariosAdmin();
       });
     }
   }
+}
 
 // ========== FUNCIONES PARA PANEL ADMIN ==========
 function cargarUsuariosAdmin() {
@@ -2406,16 +2400,15 @@ function cargarAsesoresParaSupervisor() {
       llamarBackend('obtenerTodosLosAsesores', [])
         .then(function(response) {
           if (response.success) {
+            const select = document.getElementById('filtroAsesor');
             let options = '<option value="">Todos los asesores</option>';
+            
             response.asesores.forEach(function(asesor) {
               options += `<option value="${asesor.usuario}">${asesor.nombre}</option>`;
             });
             
-            // 🔥 Inyecta los asesores en los 3 selectores de supervisión
-            ['filtroAsesor', 'filtroAsesorAccesos', 'filtroAsesorAgendamientos'].forEach(id => {
-              const el = document.getElementById(id);
-              if(el) { el.innerHTML = options; el.disabled = false; }
-            });
+            select.innerHTML = options;
+            select.disabled = false;
           } else {
             mostrarMensaje('Error cargando asesores: ' + response.mensaje, 'error', 'supervisionState');
           }
@@ -2429,14 +2422,13 @@ function cargarAsesoresParaSupervisor() {
       llamarBackend('obtenerAsesoresPorSupervisor', [userData.usuario])
         .then(function(response) {
           if (response.success) {
+            const select = document.getElementById('filtroAsesor');
+            const btnFiltrar = document.getElementById('btnFiltrarSupervision');
+            
             if (!response.asesores || response.asesores.length === 0) {
-              // Si no tiene asesores, bloquear selectores
-              ['filtroAsesor', 'filtroAsesorAccesos', 'filtroAsesorAgendamientos'].forEach(id => {
-                const el = document.getElementById(id);
-                if(el) { el.innerHTML = '<option value="">No tienes asesores asignados</option>'; el.disabled = true; }
-              });
+              select.innerHTML = '<option value="">No tienes asesores asignados</option>';
+              select.disabled = true;
               
-              const btnFiltrar = document.getElementById('btnFiltrarSupervision');
               btnFiltrar.disabled = true;
               btnFiltrar.style.opacity = '0.5';
               btnFiltrar.style.cursor = 'not-allowed';
@@ -2452,16 +2444,13 @@ function cargarAsesoresParaSupervisor() {
               
             } else {
               let options = '<option value="">Todos los asesores</option>';
+              
               response.asesores.forEach(function(asesor) {
                 options += `<option value="${asesor.usuario}">${asesor.nombre}</option>`;
               });
               
-              ['filtroAsesor', 'filtroAsesorAccesos', 'filtroAsesorAgendamientos'].forEach(id => {
-                const el = document.getElementById(id);
-                if(el) { el.innerHTML = options; el.disabled = false; }
-              });
-              
-              const btnFiltrar = document.getElementById('btnFiltrarSupervision');
+              select.innerHTML = options;
+              select.disabled = false;
               btnFiltrar.disabled = false;
               btnFiltrar.style.opacity = '1';
               btnFiltrar.style.cursor = 'pointer';
@@ -2514,55 +2503,57 @@ function cargarInformesSupervision() {
   
   const esFormularioCore = ['gastosViaje', 'actividades', 'asesoriaPresencial', 'asesoriaVirtual', 'inspeccion'].includes(tipo);
   
-  function manejarRespuesta(response) {
-    if (response.success) {
-      if (response.datos && response.datos.length > 0) {
-        mostrarInformesSupervision(response.datos, tipo);
-        document.getElementById('supervisorInfoRegistros').style.display = 'block';
-        document.getElementById('supervisorTotalRegistros').textContent = response.total;
-      } else {
-        document.getElementById('supervisorListaRegistros').innerHTML = `
-          <div style="text-align: center; padding: 60px 20px; color: var(--gris-plata);">
-            <i class="fas fa-inbox" style="font-size: 4rem; margin-bottom: 20px;"></i>
-            <h3 style="margin-bottom: 10px;">No hay registros</h3>
-            <p>${response.mensaje || 'No se encontraron registros para los filtros seleccionados.'}</p>
-          </div>
-        `;
-        document.getElementById('supervisorInfoRegistros').style.display = 'none';
-      }
-    } else {
-      mostrarMensaje('Error: ' + response.mensaje, 'error', 'supervisionState');
-      // 🔥 APAGAR EL SPINNER SI HAY ERROR DEL SERVIDOR
-      document.getElementById('supervisorListaRegistros').innerHTML = `
-        <div style="text-align: center; padding: 60px 20px; color: #dc3545;">
-          <i class="fas fa-exclamation-triangle" style="font-size: 4rem; margin-bottom: 20px;"></i>
-          <h3 style="margin-bottom: 10px;">Error del servidor</h3>
-          <p>${response.mensaje}</p>
-        </div>
-      `;
-    }
-  }
-
-  function manejarError(error) {
-    mostrarMensaje('Error de conexión: ' + error.message, 'error', 'supervisionState');
-    // 🔥 APAGAR EL SPINNER SI SE CAE LA RED
-    document.getElementById('supervisorListaRegistros').innerHTML = `
-      <div style="text-align: center; padding: 60px 20px; color: #dc3545;">
-        <i class="fas fa-wifi" style="font-size: 4rem; margin-bottom: 20px;"></i>
-        <h3 style="margin-bottom: 10px;">Error de conexión</h3>
-        <p>${error.message}</p>
-      </div>
-    `;
-  }
-
   if (esFormularioCore) {
     llamarBackend('obtenerInformesFiltrados', [tipo, asesorSeleccionado, fechaInicio, fechaFin, userData.usuario])
-      .then(manejarRespuesta)
-      .catch(manejarError);
+      .then(function(response) {
+        if (response.success) {
+          if (response.datos && response.datos.length > 0) {
+            mostrarInformesSupervision(response.datos, tipo);
+            document.getElementById('supervisorInfoRegistros').style.display = 'block';
+            document.getElementById('supervisorTotalRegistros').textContent = response.total;
+          } else {
+            document.getElementById('supervisorListaRegistros').innerHTML = `
+              <div style="text-align: center; padding: 60px 20px; color: var(--gris-plata);">
+                <i class="fas fa-inbox" style="font-size: 4rem; margin-bottom: 20px;"></i>
+                <h3 style="margin-bottom: 10px;">No hay registros</h3>
+                <p>${response.mensaje || 'No se encontraron registros para los filtros seleccionados.'}</p>
+              </div>
+            `;
+            document.getElementById('supervisorInfoRegistros').style.display = 'none';
+          }
+        } else {
+          mostrarMensaje('Error: ' + response.mensaje, 'error', 'supervisionState');
+        }
+      })
+      .catch(function(error) {
+        mostrarMensaje('Error de conexión: ' + error.message, 'error', 'supervisionState');
+      });
   } else {
+    // Formulario dinámico
     llamarBackend('obtenerInformesFiltradosDinamicos', [tipo, asesorSeleccionado, fechaInicio, fechaFin, userData.usuario])
-      .then(manejarRespuesta)
-      .catch(manejarError);
+      .then(function(response) {
+        if (response.success) {
+          if (response.datos && response.datos.length > 0) {
+            mostrarInformesSupervision(response.datos, tipo);
+            document.getElementById('supervisorInfoRegistros').style.display = 'block';
+            document.getElementById('supervisorTotalRegistros').textContent = response.total;
+          } else {
+            document.getElementById('supervisorListaRegistros').innerHTML = `
+              <div style="text-align: center; padding: 60px 20px; color: var(--gris-plata);">
+                <i class="fas fa-inbox" style="font-size: 4rem; margin-bottom: 20px;"></i>
+                <h3 style="margin-bottom: 10px;">No hay registros</h3>
+                <p>${response.mensaje || 'No se encontraron registros para este formulario.'}</p>
+              </div>
+            `;
+            document.getElementById('supervisorInfoRegistros').style.display = 'none';
+          }
+        } else {
+          mostrarMensaje('Error: ' + response.mensaje, 'error', 'supervisionState');
+        }
+      })
+      .catch(function(error) {
+        mostrarMensaje('Error de conexión: ' + error.message, 'error', 'supervisionState');
+      });
   }
 }
 
@@ -4517,7 +4508,7 @@ function descargarExcelCompleto() {
   }
 }
 
-// ========== FILTRAR POR FECHAS (CORREGIDO PARA CUALQUIER FORMATO) ==========
+// ========== FILTRAR POR FECHAS (CORREGIDO PARA USAR FECHAREGISTRO) ==========
 function filtrarPorFechas() {
   console.log('🔍 FILTRANDO POR FECHA DE REGISTRO...');
   
@@ -4529,12 +4520,14 @@ function filtrarPorFechas() {
     return;
   }
   
-  const inicioNum = fechaInicio ? new Date(fechaInicio + 'T00:00:00').getTime() : null;
-  const finNum = fechaFin ? new Date(fechaFin + 'T23:59:59').getTime() : null;
+  // Establecer horas a medianoche para comparar correctamente
+  const inicio = fechaInicio ? new Date(fechaInicio + 'T00:00:00') : null;
+  const fin = fechaFin ? new Date(fechaFin + 'T23:59:59') : null;
   
   const registrosFiltrados = registrosOriginales.filter(registro => {
     let valorFecha = '';
     
+    // 🔥 BUSCAR ESTRICTAMENTE EL CAMPO "FECHAREGISTRO"
     for (let key in registro) {
       if (key.toLowerCase() === 'fecharegistro') {
         valorFecha = registro[key];
@@ -4542,37 +4535,36 @@ function filtrarPorFechas() {
       }
     }
     
-    if (!valorFecha) return true; // Si no tiene fecha, lo mostramos
+    if (!valorFecha) {
+      return true; // Si por alguna razón un registro antiguo no lo tiene, lo mostramos
+    }
     
     let fechaDelRegistro = null;
     
+    // Limpiar la fecha (quitarle la hora y las comas)
+    // Ej: "19/05/2026, 23:55:00" -> "19/05/2026"
     try {
-      // 🔥 Parseador Inteligente de fechas
-      let strFecha = String(valorFecha).trim();
-      let matchSlash = strFecha.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+      const soloFecha = valorFecha.split(',')[0].split(' ')[0].trim(); 
       
-      if (matchSlash) {
-        fechaDelRegistro = new Date(matchSlash[3], matchSlash[2] - 1, matchSlash[1]);
-      } else {
-        let matchDash = strFecha.match(/(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
-        if (matchDash) {
-          fechaDelRegistro = new Date(matchDash[1], matchDash[2] - 1, matchDash[3]);
-        } else {
-          fechaDelRegistro = new Date(strFecha);
+      if (soloFecha.includes('/')) {
+        const partes = soloFecha.split('/');
+        if (partes.length === 3) {
+          fechaDelRegistro = new Date(partes[2], partes[1] - 1, partes[0]);
         }
+      } else if (soloFecha.includes('-')) {
+        fechaDelRegistro = new Date(soloFecha + 'T12:00:00'); // T12 para evitar bugs de zona horaria
       }
     } catch (e) {
       console.error("Error aislando la fecha:", valorFecha);
     }
     
     if (!fechaDelRegistro || isNaN(fechaDelRegistro.getTime())) {
-      return true; // Si la fecha estaba corrupta en la base de datos, no lo filtramos
+      return true;
     }
     
-    // Comparación matemática estricta
-    const tiempoRegistro = fechaDelRegistro.getTime();
-    if (inicioNum && tiempoRegistro < inicioNum) return false;
-    if (finNum && tiempoRegistro > finNum) return false;
+    // Validar rangos
+    if (inicio && fechaDelRegistro < inicio) return false;
+    if (fin && fechaDelRegistro > fin) return false;
     
     return true;
   });
