@@ -9035,20 +9035,25 @@ function generarScriptsDinamicos(formConfig, formularioId, usuario, datosVisita,
       }
     });
     
+  // ===== UBICACIÓN DINÁMICA =====
     document.getElementById('btnUbicacion').addEventListener('click', async function() {
       const btn = this;
       const display = document.getElementById('ubicacionDisplay');
+      
       btn.disabled = true;
       btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Obteniendo...';
       display.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Solicitando permisos...';
+      
       try {
         const ubicacion = await window.parent.obtenerUbicacionActual();
         const resultado = await window.parent.obtenerCiudadDesdeCoordenadas(ubicacion.lat, ubicacion.lng);
+        
         if (resultado.success) {
           document.getElementById('latitud_geo').value = ubicacion.lat.toFixed(6);
           document.getElementById('longitud_geo').value = ubicacion.lng.toFixed(6);
           document.getElementById('ciudad_geo').value = resultado.ciudad;
-          display.innerHTML = '<i class="fas fa-check-circle"></i> ✅ Ubicación: ' + resultado.ciudad;
+          
+          display.innerHTML = '<i class="fas fa-check-circle" style="color: #10b981;"></i> ✅ Ubicación: ' + resultado.ciudad;
           btn.innerHTML = '<i class="fas fa-check"></i> Ubicación registrada';
           btn.style.background = '#10b981';
           guardarBorrador();
@@ -9056,9 +9061,18 @@ function generarScriptsDinamicos(formConfig, formularioId, usuario, datosVisita,
           throw new Error('No se pudo obtener la ciudad');
         }
       } catch (error) {
-        display.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ⚠️ ' + error.message;
-        btn.innerHTML = '<i class="fas fa-location-dot"></i> Reintentar';
-        btn.style.background = '#3b82f6';
+        // 🔥 AQUÍ ESTÁ EL MODO OFFLINE PARA FORMULARIOS DINÁMICOS
+        console.warn("Ubicación fallida (offline):", error.message);
+        
+        document.getElementById('latitud_geo').value = "0";
+        document.getElementById('longitud_geo').value = "0";
+        document.getElementById('ciudad_geo').value = "Sin internet para obtener ubicación";
+        
+        display.innerHTML = '<i class="fas fa-exclamation-triangle" style="color: #f59e0b;"></i> Modo Offline: Ubicación no registrada';
+        btn.innerHTML = '<i class="fas fa-check"></i> Modo Offline activado';
+        btn.style.background = '#f59e0b';
+        
+        guardarBorrador();
       } finally {
         btn.disabled = false;
       }
