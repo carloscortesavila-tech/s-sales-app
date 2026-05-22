@@ -7100,23 +7100,29 @@ window.addEventListener('load', function() {
   }
 });
 
+// ========== BLINDAJE ANTI-ZOMBI PARA ANDROID ==========
 document.addEventListener("visibilitychange", function() {
   if (document.visibilityState === 'visible') {
-    console.log('📱 App volvió a primer plano, ejecutando reparación...');
+    console.log('📱 App en primer plano. Verificando integridad...');
     
-    // Pequeña pausa para asegurar que el DOM terminó de renderizarse
-    setTimeout(() => {
-      repararBotones();
-      
-      // Asegurar que el estado activo siga siendo el correcto
-      const activeState = document.querySelector('.app-state.active');
-      if (!activeState) {
-        document.getElementById('welcomeState').style.display = 'flex';
-        document.getElementById('welcomeState').classList.add('active');
-      }
-    }, 500);
+    // 1. Verificamos si tenemos una sesión activa y estamos en el login
+    const activeState = document.querySelector('.app-state.active');
+    
+    // 2. Si la app está en "estado zombi" (sin botones funcionando), forzamos una recarga silenciosa
+    // Comprobamos si el grid de botones está vacío o si no hay botones funcionales
+    const btnApp = document.getElementById('btnApp');
+    if (activeState && activeState.id === 'welcomeState' && !btnApp) {
+        console.warn('⚠️ Botones detectados como muertos. Re-inicializando...');
+        actualizarMenuPorRol();
+    }
+    
+    // 3. Verificamos si la sesión sigue viva
+    if (!userData && sessionStorage.getItem('userData')) {
+        console.log('🔄 Sesión encontrada en memoria, re-cargando...');
+        restaurarSesion();
+    }
   }
-});   
+});  
       
 // ========== FUNCIONES PARA ADMIN - ASIGNACIÓN DE ASESORES ==========
 
