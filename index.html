@@ -7099,6 +7099,19 @@ window.addEventListener('load', function() {
     console.log('✅ Botón de descarga masiva de PDF configurado');
   }
 });
+
+document.addEventListener("visibilitychange", function() {
+  if (document.visibilityState === 'visible') {
+    console.log('🔄 App volvió a ser visible - Re-activando botones...');
+    // Reactivamos los botones principales
+    actualizarMenuPorRol();
+    
+    // Si el usuario estaba en la pantalla de informes, recargamos el selector
+    const select = document.getElementById('tipoInforme');
+    if (select) llenarSelectorConFormularios(select);
+  }
+});      
+      
 // ========== FUNCIONES PARA ADMIN - ASIGNACIÓN DE ASESORES ==========
 
 // Variables globales
