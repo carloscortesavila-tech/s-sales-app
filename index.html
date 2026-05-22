@@ -10351,6 +10351,50 @@ function repararBotones() {
     });
   });
 }
+
+      // ========== CENTINELA DE INICIALIZACIÓN (Protección contra muerte de scripts en Android) ==========
+document.addEventListener("visibilitychange", function() {
+  if (document.visibilityState === 'visible') {
+    console.log('📱 App en primer plano. Verificando integridad...');
+    
+    // 1. Verificamos si la sesión sigue viva. Si Android mató la variable, restauramos.
+    if (!window.userData) {
+      console.warn('⚠️ Memoria purgada por Android. Restaurando sesión...');
+      const restored = restaurarSesion();
+      if (restored) {
+        console.log('✅ Sesión restaurada desde sessionStorage.');
+      }
+    }
+    
+    // 2. Verificamos si los botones están vivos.
+    const btnApp = document.getElementById('btnApp');
+    const welcome = document.getElementById('welcomeState');
+    
+    // Si estamos en el menú principal y el botón de 'APP' no existe (zombi)
+    if (welcome && welcome.style.display !== 'none' && !btnApp) {
+      console.warn('⚠️ Botones detectados como muertos. Re-construyendo menú...');
+      actualizarMenuPorRol();
+    }
+  }
+});
+
+      if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').then(reg => {
+        reg.onupdatefound = () => {
+          const installingWorker = reg.installing;
+          installingWorker.onstatechange = () => {
+            if (installingWorker.state === 'installed') {
+              if (navigator.serviceWorker.controller) {
+                console.log('🔄 Nueva versión disponible. Recargando...');
+                window.location.reload();
+              }
+            }
+          };
+        };
+      }).catch(err => console.error('Error al registrar SW:', err));
+    });
+  }
     </script>
   </body>
 </html>
