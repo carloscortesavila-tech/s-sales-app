@@ -7102,15 +7102,21 @@ window.addEventListener('load', function() {
 
 document.addEventListener("visibilitychange", function() {
   if (document.visibilityState === 'visible') {
-    console.log('🔄 App volvió a ser visible - Re-activando botones...');
-    // Reactivamos los botones principales
-    actualizarMenuPorRol();
+    console.log('📱 App volvió a primer plano, ejecutando reparación...');
     
-    // Si el usuario estaba en la pantalla de informes, recargamos el selector
-    const select = document.getElementById('tipoInforme');
-    if (select) llenarSelectorConFormularios(select);
+    // Pequeña pausa para asegurar que el DOM terminó de renderizarse
+    setTimeout(() => {
+      repararBotones();
+      
+      // Asegurar que el estado activo siga siendo el correcto
+      const activeState = document.querySelector('.app-state.active');
+      if (!activeState) {
+        document.getElementById('welcomeState').style.display = 'flex';
+        document.getElementById('welcomeState').classList.add('active');
+      }
+    }, 500);
   }
-});      
+});   
       
 // ========== FUNCIONES PARA ADMIN - ASIGNACIÓN DE ASESORES ==========
 
@@ -10303,6 +10309,40 @@ function generarCampoNormalHTML(campo) {
         cambiarEstado(b.origen, b.estado, 'derecha');
       });
     }
+  });
+}
+      // ========== REPARACIÓN DE EMERGENCIA PARA MÓVIL ==========
+function repararBotones() {
+  console.log("🛠️ Reparando conexiones de botones...");
+  
+  // 1. Reparar botones de Navegación (tipo .action-btn)
+  document.querySelectorAll('.action-btn').forEach(btn => {
+    // Eliminamos listeners viejos clonando el nodo
+    const clon = btn.cloneNode(true);
+    btn.parentNode.replaceChild(clon, btn);
+    
+    // Asignamos la lógica según el ID
+    clon.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (clon.id === 'btnApp') cambiarEstado('welcomeState', 'appState', 'derecha');
+      if (clon.id === 'btnReports') cambiarEstado('welcomeState', 'reportsState', 'derecha');
+      if (clon.id === 'btnAdmin') cambiarEstado('welcomeState', 'adminState', 'derecha');
+      if (clon.id === 'btnSupervisar') cambiarEstado('welcomeState', 'supervisionState', 'derecha');
+    });
+  });
+
+  // 2. Reparar botones de "Volver" (btn-back)
+  document.querySelectorAll('.btn-back').forEach(btn => {
+    const clon = btn.cloneNode(true);
+    btn.parentNode.replaceChild(clon, btn);
+    clon.addEventListener('click', (e) => {
+      e.preventDefault();
+      // Lógica de volver atrás genérica
+      const estadoActual = clon.closest('.app-state');
+      if (estadoActual.id === 'appState') cambiarEstado('appState', 'welcomeState', 'izquierda');
+      if (estadoActual.id === 'reportsState') cambiarEstado('reportsState', 'welcomeState', 'izquierda');
+      if (estadoActual.id === 'adminState') cambiarEstado('adminState', 'welcomeState', 'izquierda');
+    });
   });
 }
     </script>
