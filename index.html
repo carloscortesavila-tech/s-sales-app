@@ -1582,27 +1582,34 @@ async function llamarBackend(accion, parametros = []) {
         }
       }
 
-      // ========== LÓGICA DEL MODO OFFLINE (EL CEREBRO PWA) ==========
+     // ========== LÓGICA DEL MODO OFFLINE (EL CEREBRO PWA) ==========
       function manejarPeticionOffline(accion, parametros) {
         console.warn("⚡ MODO OFFLINE ACTIVADO PARA:", accion);
         
-        // A. Si no hay internet, permitimos abrir el formulario sin verificar visita
         if (accion === 'verificarAccesoFormulario') {
           return { success: true, permitido: true, visita: null };
         }
         
-        // B. Engañamos a la barra de progreso simulando que los archivos suben rápido
+        // 🔥 NUEVO: Permitir que los formularios carguen desde la memoria caché del celular
+        if (accion === 'obtenerFormulariosConfig') {
+          const cached = localStorage.getItem('formulariosConfigurados');
+          if (cached) {
+            try {
+              return { success: true, formularios: JSON.parse(cached).formularios };
+            } catch (e) { return { success: true, formularios: [] }; }
+          }
+          return { success: true, formularios: [] };
+        }
+        
         if (accion === 'subirArchivosADrive' || accion === 'guardarFirmaComoArchivo') {
           return { success: true, mock: true };
         }
         
-        // C. Atrapamos el envío final y lo guardamos en la memoria del celular
         if (accion === 'guardarFormularioConArchivos' || accion === 'guardarFormularioInterno' || 
             accion === 'guardarAgendamiento' || accion === 'iniciarVisita' || accion === 'terminarVisita') {
           return guardarEnBolsillo(accion, parametros);
         }
         
-        // D. Las consultas de lectura (ver reportes, clientes) se bloquean amablemente
         throw new Error("Estás sin conexión. Esta acción requiere internet.");
       }
 
@@ -2153,17 +2160,23 @@ document.getElementById('btnLogoutFromSupervision').addEventListener('click', fu
   logout();
 });
 
-    function actualizarMenuPorRol() {
-  console.log('🎯 actualizarMenuPorRol ejecutándose');
-  
+function actualizarMenuPorRol() {
   const actionGrid = document.querySelector('#welcomeState .action-grid');
+  if (!actionGrid || !userData) return;
   
-  if (!actionGrid || !userData) {
-    return;
-  }
+  // Guardamos el HTML base del asesor para no destruirlo si ya existe
+  const htmlAsesor = `
+      <a href="#" class="action-btn btn-app" id="btnApp">
+        <i class="fas fa-rocket"></i> APP
+        <small>Módulo principal</small>
+      </a>
+      <a href="#" class="action-btn btn-reports" id="btnReports">
+        <i class="fas fa-chart-bar"></i> INFORMES
+        <small>Mis reportes</small>
+      </a>
+  `;
   
   if (userData.rol === 'ADMIN') {
-    // ADMIN: SOLO muestra ADMIN y SUPERVISAR (sin APP ni INFORMES)
     actionGrid.innerHTML = `
       <a href="#" class="action-btn btn-admin" id="btnAdmin">
         <i class="fas fa-users-cog"></i> ADMIN
@@ -2174,89 +2187,96 @@ document.getElementById('btnLogoutFromSupervision').addEventListener('click', fu
         <small>Ver todos los informes</small>
       </a>
     `;
-    
   } else if (userData.rol === 'SUPERVISOR') {
-    // SUPERVISOR: SOLO muestra SUPERVISAR (sin APP ni INFORMES)
     actionGrid.innerHTML = `
       <a href="#" class="action-btn btn-supervisar" id="btnSupervisar">
         <i class="fas fa-eye"></i> SUPERVISAR
         <small>Ver informes de asesores</small>
       </a>
     `;
-    
   } else { // ASESOR
-    // ASESOR: muestra APP e INFORMES (como estaba)
-    actionGrid.innerHTML = `
-      <a href="#" class="action-btn btn-app" id="btnApp">
-        <i class="fas fa-rocket"></i> APP
-        <small>Módulo principal</small>
-      </a>
-      <a href="#" class="action-btn btn-reports" id="btnReports">
-        <i class="fas fa-chart-bar"></i> INFORMES
-        <small>Mis reportes</small>
-      </a>
-    `;
+    // Solo reescribimos si NO están los botones de asesor ya presentes
+    if (!document.getElementById('btnApp')) {
+      actionGrid.innerHTML = htmlAsesor;
+    }
   }
   
-  // Re-asignar event listeners para APP (solo si existe el botón)
+  // 🔥 Siempre reasignamos los event listeners a los botones con blindaje
   const btnApp = document.getElementById('btnApp');
   if (btnApp) {
-    btnApp.addEventListener('click', function(e) {
+    const newBtnApp = btnApp.cloneNode(true);
+    btnApp.parentNode.replaceChild(newBtnApp, btnApp);
+    newBtnApp.addEventListener('click', function(e) {
       e.preventDefault();
       document.getElementById('appUser').textContent = userData.usuario;
       cambiarEstado('welcomeState', 'appState', 'derecha');
+      mostrarMensaje('✓ Cargando módulo APP...', 'success', 'appState');
     });
   }
   
-  // Re-asignar event listeners para INFORMES (solo si existe el botón)
   const btnReports = document.getElementById('btnReports');
   if (btnReports) {
-    btnReports.addEventListener('click', function(e) {
+    const newBtnReports = btnReports.cloneNode(true);
+    btnReports.parentNode.replaceChild(newBtnReports, btnReports);
+    newBtnReports.addEventListener('click', async function(e) {
       e.preventDefault();
       document.getElementById('reportsUser').textContent = userData.usuario;
       cambiarEstado('welcomeState', 'reportsState', 'derecha');
+      
+      document.getElementById('listaRegistros').innerHTML = `
+        <div style="text-align: center; padding: 40px 20px; color: var(--gris-plata);">
+            <i class="fas fa-file-alt" style="font-size: 3rem; margin-bottom: 15px;"></i>
+            <p>Seleccione un tipo de formulario para ver los registros</p>
+        </div>
+      `;
+      document.getElementById('infoRegistros').style.display = 'none';
+      document.getElementById('btnDescargarExcel').disabled = true;
+      document.getElementById('btnDescargarPDFMasivo').disabled = true;
+      
+      registrosOriginales = [];
+      registrosActuales = [];
+      tipoInformeActual = '';
+      
+      const select = document.getElementById('tipoInforme');
+      select.innerHTML = '<option value="">-- Cargando formularios... --</option>';
+      
+      try {
+        await recargarFormulariosCompleto();
+        await llenarSelectorConFormularios(select, true);
+      } catch (error) {
+        select.innerHTML = '<option value="">-- Modo Offline: Seleccione informe --</option>';
+        await llenarSelectorConFormularios(select, false); // Intenta llenar con caché
+      }
     });
   }
-  
-  // Event listeners para botones de admin/supervisor
-if (userData.rol === 'ADMIN' || userData.rol === 'SUPERVISOR') {
-  const btnSupervisar = document.getElementById('btnSupervisar');
-  if (btnSupervisar) {
-    // Eliminar event listener anterior clonando para evitar duplicados
-    const nuevoBtn = btnSupervisar.cloneNode(true);
-    btnSupervisar.parentNode.replaceChild(nuevoBtn, btnSupervisar);
-    
-    nuevoBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      
-      document.getElementById('supervisionUser').textContent = userData.usuario;
-      document.getElementById('supervisionRol').textContent = userData.rol;
-      
-      cambiarEstado('welcomeState', 'supervisionState', 'derecha');
-      
-      // Esperar a que el estado se active
-      setTimeout(function() {
-        // Inicializar los tabs
-        iniciarTabsSupervision();
+
+  if (userData.rol === 'ADMIN' || userData.rol === 'SUPERVISOR') {
+    const btnSupervisar = document.getElementById('btnSupervisar');
+    if (btnSupervisar) {
+      const nuevoBtn = btnSupervisar.cloneNode(true);
+      btnSupervisar.parentNode.replaceChild(nuevoBtn, btnSupervisar);
+      nuevoBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        document.getElementById('supervisionUser').textContent = userData.usuario;
+        document.getElementById('supervisionRol').textContent = userData.rol;
+        cambiarEstado('welcomeState', 'supervisionState', 'derecha');
         
-        // Cargar asesores en selectores
-        cargarAsesoresSelectoresSupervision();
-        
-        // Cargar selector de informes
-        cargarSelectorSupervision();
-        
-        // Cargar asesores para el filtro de informes
-        cargarAsesoresParaSupervisor();
-        
-      }, 300);
-    });
+        setTimeout(function() {
+          iniciarTabsSupervision();
+          cargarAsesoresSelectoresSupervision();
+          cargarSelectorSupervision();
+          cargarAsesoresParaSupervisor();
+        }, 300);
+      });
+    }
   }
-}
   
   if (userData.rol === 'ADMIN') {
     const btnAdmin = document.getElementById('btnAdmin');
     if (btnAdmin) {
-      btnAdmin.addEventListener('click', function(e) {
+      const newBtnAdmin = btnAdmin.cloneNode(true);
+      btnAdmin.parentNode.replaceChild(newBtnAdmin, btnAdmin);
+      newBtnAdmin.addEventListener('click', function(e) {
         e.preventDefault();
         document.getElementById('adminUser').textContent = userData.usuario;
         cambiarEstado('welcomeState', 'adminState', 'derecha');
