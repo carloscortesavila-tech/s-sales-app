@@ -4378,18 +4378,15 @@ function cambiarPagina(nuevaPagina) {
   mostrarRegistrosPaginados(registrosActuales, tipoInformeActual, nuevaPagina);
 }
 
- // ========== DESCARGAR PDF INDIVIDUAL ==========
-// ========== DESCARGAR PDF INDIVIDUAL (MODIFICADA) ==========
+// ========== DESCARGAR PDF INDIVIDUAL (CORREGIDA) ==========
 function descargarPDFRegistro(tipo, index) {
   mostrarMensaje('Generando PDF...', 'success', 'reportsState');
   
-  // 🔥 OBTENER EL REGISTRO COMPLETO CON EL ÍNDICE REAL
   const registroCompleto = registrosActuales[index];
+  // 🔥 LA CLAVE: Buscar el índice en la base de datos original
+  const indiceOriginal = registrosOriginales.indexOf(registroCompleto);
   
-  // 🔥 OBTENER LOS CAMPOS EN EL ORDEN ORIGINAL (desde la configuración del formulario)
   const formularioConfig = window.formulariosConfigurados?.find(f => f.id == tipo);
-  
-  // Guardar temporalmente en window para que la función GS pueda acceder
   if (formularioConfig && formularioConfig.campos) {
     window._ordenCamposActual = formularioConfig.campos.map(c => c.etiqueta);
   }
@@ -4397,70 +4394,52 @@ function descargarPDFRegistro(tipo, index) {
   const esFormularioCore = ['gastosViaje', 'actividades', 'asesoriaPresencial', 'asesoriaVirtual', 'inspeccion'].includes(tipo);
   
   if (esFormularioCore) {
-    llamarBackend('generarPDFRegistro', [tipo, index, userData.usuario])
+    llamarBackend('generarPDFRegistro', [tipo, indiceOriginal, userData.usuario])
       .then(function(response) {
-        if (response.success) {
-          window.open(response.url, '_blank');
-          mostrarMensaje('✅ PDF generado exitosamente', 'success', 'reportsState');
-        } else {
-          mostrarMensaje('❌ Error: ' + response.mensaje, 'error', 'reportsState');
-        }
-        // Limpiar variable temporal
+        if (response.success) { window.open(response.url, '_blank'); mostrarMensaje('✅ PDF generado', 'success', 'reportsState'); } 
+        else { mostrarMensaje('❌ Error: ' + response.mensaje, 'error', 'reportsState'); }
         delete window._ordenCamposActual;
-      })
-      .catch(function(error) {
+      }).catch(function(error) {
         mostrarMensaje('Error de conexión: ' + error.message, 'error', 'reportsState');
         delete window._ordenCamposActual;
       });
   } else {
-    // Para formularios dinámicos, pasar el registro y el orden
-    llamarBackend('generarPDFRegistroDinamicoConOrden', [tipo, index, userData.usuario, registroCompleto, window._ordenCamposActual])
+    llamarBackend('generarPDFRegistroDinamicoConOrden', [tipo, indiceOriginal, userData.usuario, registroCompleto, window._ordenCamposActual])
       .then(function(response) {
-        if (response.success) {
-          window.open(response.url, '_blank');
-          mostrarMensaje('✅ PDF generado exitosamente', 'success', 'reportsState');
-        } else {
-          mostrarMensaje('❌ Error: ' + response.mensaje, 'error', 'reportsState');
-        }
+        if (response.success) { window.open(response.url, '_blank'); mostrarMensaje('✅ PDF generado', 'success', 'reportsState'); } 
+        else { mostrarMensaje('❌ Error: ' + response.mensaje, 'error', 'reportsState'); }
         delete window._ordenCamposActual;
-      })
-      .catch(function(error) {
+      }).catch(function(error) {
         mostrarMensaje('Error de conexión: ' + error.message, 'error', 'reportsState');
         delete window._ordenCamposActual;
       });
   }
 }
 
-// ========== DESCARGAR EXCEL INDIVIDUAL ==========
+// ========== DESCARGAR EXCEL INDIVIDUAL (CORREGIDA) ==========
 function descargarExcelRegistro(tipo, index) {
   mostrarMensaje('Generando Excel...', 'success', 'reportsState');
+  
+  const registroCompleto = registrosActuales[index];
+  // 🔥 CORRECCIÓN: Índice real para Excel
+  const indiceOriginal = registrosOriginales.indexOf(registroCompleto);
   
   const esFormularioCore = ['gastosViaje', 'actividades', 'asesoriaPresencial', 'asesoriaVirtual', 'inspeccion'].includes(tipo);
   
   if (esFormularioCore) {
-    llamarBackend('generarExcelRegistroIndividual', [tipo, index, userData.usuario])
+    llamarBackend('generarExcelRegistroIndividual', [tipo, indiceOriginal, userData.usuario])
       .then(function(response) {
-        if (response.success) {
-          window.open(response.url, '_blank');
-          mostrarMensaje('✅ Excel generado exitosamente', 'success', 'reportsState');
-        } else {
-          mostrarMensaje('❌ Error: ' + response.mensaje, 'error', 'reportsState');
-        }
-      })
-      .catch(function(error) {
+        if (response.success) { window.open(response.url, '_blank'); mostrarMensaje('✅ Excel generado', 'success', 'reportsState'); } 
+        else { mostrarMensaje('❌ Error: ' + response.mensaje, 'error', 'reportsState'); }
+      }).catch(function(error) {
         mostrarMensaje('Error de conexión: ' + error.message, 'error', 'reportsState');
       });
   } else {
-    llamarBackend('generarExcelRegistroIndividualDinamico', [tipo, index, userData.usuario])
+    llamarBackend('generarExcelRegistroIndividualDinamico', [tipo, indiceOriginal, userData.usuario])
       .then(function(response) {
-        if (response.success) {
-          window.open(response.url, '_blank');
-          mostrarMensaje('✅ Excel generado exitosamente', 'success', 'reportsState');
-        } else {
-          mostrarMensaje('❌ Error: ' + response.mensaje, 'error', 'reportsState');
-        }
-      })
-      .catch(function(error) {
+        if (response.success) { window.open(response.url, '_blank'); mostrarMensaje('✅ Excel generado', 'success', 'reportsState'); } 
+        else { mostrarMensaje('❌ Error: ' + response.mensaje, 'error', 'reportsState'); }
+      }).catch(function(error) {
         mostrarMensaje('Error de conexión: ' + error.message, 'error', 'reportsState');
       });
   }
@@ -4508,63 +4487,61 @@ function descargarExcelCompleto() {
   }
 }
 
-// ========== FILTRAR POR FECHAS (CORREGIDO PARA USAR FECHAREGISTRO) ==========
+// ========== FILTRAR POR FECHAS (CORREGIDO) ==========
 function filtrarPorFechas() {
-  console.log('🔍 FILTRANDO POR FECHA DE REGISTRO...');
-  
   const fechaInicio = document.getElementById('fechaInicio').value;
   const fechaFin = document.getElementById('fechaFin').value;
   
   if (!fechaInicio && !fechaFin) {
-    mostrarMensaje('Seleccione al menos una fecha para filtrar', 'warning', 'reportsState');
+    mostrarMensaje('Seleccione al menos una fecha', 'warning', 'reportsState');
     return;
   }
   
-  // Establecer horas a medianoche para comparar correctamente
-  const inicio = fechaInicio ? new Date(fechaInicio + 'T00:00:00') : null;
-  const fin = fechaFin ? new Date(fechaFin + 'T23:59:59') : null;
+  // Llevamos los inputs a milisegundos para precisión matemática
+  const inicioNum = fechaInicio ? new Date(fechaInicio + 'T00:00:00').getTime() : null;
+  const finNum = fechaFin ? new Date(fechaFin + 'T23:59:59').getTime() : null;
   
   const registrosFiltrados = registrosOriginales.filter(registro => {
-    let valorFecha = '';
+    let valorFecha = null;
     
-    // 🔥 BUSCAR ESTRICTAMENTE EL CAMPO "FECHAREGISTRO"
+    // 🔥 CORRECCIÓN: Buscar cualquier columna que contenga "fecha"
     for (let key in registro) {
-      if (key.toLowerCase() === 'fecharegistro') {
+      if (key.toLowerCase().includes('fecha')) {
         valorFecha = registro[key];
         break;
       }
     }
     
-    if (!valorFecha) {
-      return true; // Si por alguna razón un registro antiguo no lo tiene, lo mostramos
-    }
+    // Si definitivamente no hay columna de fecha, no lo ocultamos por seguridad
+    if (!valorFecha) return true; 
     
     let fechaDelRegistro = null;
+    let strFecha = String(valorFecha).trim();
     
-    // Limpiar la fecha (quitarle la hora y las comas)
-    // Ej: "19/05/2026, 23:55:00" -> "19/05/2026"
     try {
-      const soloFecha = valorFecha.split(',')[0].split(' ')[0].trim(); 
-      
-      if (soloFecha.includes('/')) {
-        const partes = soloFecha.split('/');
-        if (partes.length === 3) {
-          fechaDelRegistro = new Date(partes[2], partes[1] - 1, partes[0]);
+      // Parseador para DD/MM/YYYY
+      let matchSlash = strFecha.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+      if (matchSlash) {
+        fechaDelRegistro = new Date(matchSlash[3], matchSlash[2] - 1, matchSlash[1]);
+      } else {
+        // Parseador para YYYY-MM-DD
+        let matchDash = strFecha.match(/(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+        if (matchDash) {
+          fechaDelRegistro = new Date(matchDash[1], matchDash[2] - 1, matchDash[3]);
+        } else {
+          // Parseo nativo
+          fechaDelRegistro = new Date(strFecha);
         }
-      } else if (soloFecha.includes('-')) {
-        fechaDelRegistro = new Date(soloFecha + 'T12:00:00'); // T12 para evitar bugs de zona horaria
       }
     } catch (e) {
-      console.error("Error aislando la fecha:", valorFecha);
+      console.error("Error aislando fecha:", strFecha);
     }
     
-    if (!fechaDelRegistro || isNaN(fechaDelRegistro.getTime())) {
-      return true;
-    }
+    if (!fechaDelRegistro || isNaN(fechaDelRegistro.getTime())) return true;
     
-    // Validar rangos
-    if (inicio && fechaDelRegistro < inicio) return false;
-    if (fin && fechaDelRegistro > fin) return false;
+    const tiempoRegistro = fechaDelRegistro.getTime();
+    if (inicioNum && tiempoRegistro < inicioNum) return false;
+    if (finNum && tiempoRegistro > finNum) return false;
     
     return true;
   });
@@ -4572,10 +4549,12 @@ function filtrarPorFechas() {
   registrosActuales = registrosFiltrados;
   paginaActual = 1;
   mostrarRegistrosPaginados(registrosActuales, tipoInformeActual, 1);
-  document.getElementById('totalRegistros').textContent = registrosActuales.length;
+  
+  const totalEl = document.getElementById('totalRegistros');
+  if (totalEl) totalEl.textContent = registrosActuales.length;
   
   if (registrosActuales.length === 0) {
-    mostrarMensaje('No hay registros en el rango de fechas seleccionado', 'info', 'reportsState');
+    mostrarMensaje('No hay registros en esas fechas', 'info', 'reportsState');
   }
 }
 
@@ -10139,17 +10118,19 @@ function cancelarDescargaMasiva() {
   mostrarMensaje('Descarga cancelada', 'info', 'reportsState');
 }
 
+// ========== DESCARGA MASIVA (CORREGIDA) ==========
 function procesarSiguientePDF() {
   if (!window._pdfMasivo || !window._pdfMasivo.activa) return;
   
-  // SI TERMINAMOS LA COLA, CREAMOS EL ZIP
   if (window._pdfMasivo.indiceActual >= window._pdfMasivo.cola.length) {
     generarPasoFinalZip();
     return;
   }
   
   const registro = window._pdfMasivo.cola[window._pdfMasivo.indiceActual];
-  const registroIndex = registrosActuales.indexOf(registro);
+  // 🔥 CORRECCIÓN: Índice real en descargas masivas
+  const indiceOriginal = registrosOriginales.indexOf(registro);
+  
   const progresoActual = window._pdfMasivo.indiceActual + 1;
   const total = window._pdfMasivo.cola.length;
   
@@ -10177,14 +10158,13 @@ function procesarSiguientePDF() {
   }
 
   if (esFormularioCore) {
-    llamarBackend('generarPDFRegistro', [tipoInformeActual, registroIndex, userData.usuario])
+    llamarBackend('generarPDFRegistro', [tipoInformeActual, indiceOriginal, userData.usuario])
       .then(handler)
       .catch(handlerError);
   } else {
-    // Para dinámicos, pasamos los datos necesarios
     const formularioConfig = window.formulariosConfigurados?.find(f => f.id == tipoInformeActual);
     let orden = formularioConfig?.campos?.map(c => c.etiqueta) || [];
-    llamarBackend('generarPDFRegistroDinamicoConOrden', [tipoInformeActual, registroIndex, userData.usuario, registro, orden])
+    llamarBackend('generarPDFRegistroDinamicoConOrden', [tipoInformeActual, indiceOriginal, userData.usuario, registro, orden])
       .then(handler)
       .catch(handlerError);
   }
