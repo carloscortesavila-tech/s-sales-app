@@ -7958,79 +7958,63 @@ function generarCampoFirmaHTML(nombreCampo, etiqueta, requerido, indice = 1) {
 
 // ========== GENERAR FORMULARIO DINÁMICO CON ORDEN ORIGINAL ==========
 function generarFormularioDinamico(formularioId, datosVisita, usuario) {
-  const iframe = document.getElementById('formIframe');
-  
-  const formConfig = window.formulariosConfigurados?.find(f => f.id == formularioId);
-  
-  if (!formConfig) {
-    iframe.srcdoc = generarErrorHTML();
-    return;
-  }
-  
-  // 🔥 DIAGNÓSTICO: Ver qué campos tiene el formulario
-  console.log('🔍 FORMULARIO:', formConfig.nombre);
-  console.log('📋 CAMPOS:', formConfig.campos);
-  console.log('📸 CAMPOS DE IMAGEN:', formConfig.campos.filter(c => c.tipo === 'imagen'));
-  
-  // Construir el HTML base
-  let html = generarHTMLCompleto(formConfig, datosVisita, usuario);
-  
-  // Badge de visita activa
-  if (datosVisita) {
-    html += generarBadgeVisitaHTML(datosVisita);
-  }
-  
-  // Sección de ubicación
-  html += generarSeccionUbicacionHTML();
-  
-  // ===== RECORRER CAMPOS EN EL ORDEN ORIGINAL =====
-  for (let i = 0; i < formConfig.campos.length; i++) {
-    const campo = formConfig.campos[i];
+  try {
+    const iframe = document.getElementById('formIframe');
+    const formConfig = window.formulariosConfigurados?.find(f => f.id == formularioId);
     
-    console.log(`🔄 Procesando campo ${i}:`, campo.tipo, campo.etiqueta);
+    if (!formConfig) {
+      iframe.srcdoc = generarErrorHTML();
+      return;
+    }
     
-    // Según el tipo de campo, llamar a la función correspondiente
-    if (campo.tipo === 'imagen') {
-      console.log(`📸 Generando sección de IMAGEN para campo ${i}`);
-      html += generarSeccionImagenHTML(campo, i);
+    console.log('Construyendo formulario dinámico:', formConfig.nombre);
+    
+    let html = generarHTMLCompleto(formConfig, datosVisita, usuario);
+    
+    if (datosVisita) {
+      html += generarBadgeVisitaHTML(datosVisita);
     }
-    else if (campo.tipo === 'documentos') {
-      console.log(`📄 Generando sección de DOCUMENTO para campo ${i}`);
-      html += generarSeccionDocumentoHTML(campo, i);
+    
+    html += generarSeccionUbicacionHTML();
+    
+    for (let i = 0; i < formConfig.campos.length; i++) {
+      const campo = formConfig.campos[i];
+      if (!campo) continue; // Si hay un campo vacío, lo salta sin romper la App
+      
+      console.log(`🔄 Procesando campo ${i}:`, campo.tipo, campo.etiqueta);
+      
+      if (campo.tipo === 'imagen') {
+        html += generarSeccionImagenHTML(campo, i);
+      } else if (campo.tipo === 'documentos') {
+        html += generarSeccionDocumentoHTML(campo, i);
+      } else if (campo.tipo === 'firma') {
+        const nombreCampo = (campo.etiqueta || 'firma').replace(/\s+/g, '_').toLowerCase();
+        html += generarCampoFirmaHTML(nombreCampo, campo.etiqueta, campo.obligatorio, i);
+      } else if (campo.tipo === 'firma2') {
+        const nombreCampo = (campo.etiqueta || 'firma2').replace(/\s+/g, '_').toLowerCase();
+        html += generarCampoFirmaHTML(nombreCampo, campo.etiqueta, campo.obligatorio, i + 100);
+      } else {
+        html += generarCampoNormalHTML(campo);
+      }
     }
-    else if (campo.tipo === 'firma') {
-      const nombreCampo = campo.etiqueta.replace(/\s+/g, '_').toLowerCase();
-      html += generarCampoFirmaHTML(nombreCampo, campo.etiqueta, campo.obligatorio, i);
-    }
-    else if (campo.tipo === 'firma2') {
-      const nombreCampo = campo.etiqueta.replace(/\s+/g, '_').toLowerCase();
-      html += generarCampoFirmaHTML(nombreCampo, campo.etiqueta, campo.obligatorio, i + 100);
-    }
-    else {
-      html += generarCampoNormalHTML(campo);
-    }
+    
+    html += generarBotonesHTML();
+    
+    const numCamposImagen = formConfig.campos.filter(c => c && c.tipo === 'imagen').length;
+    const numCamposDocumento = formConfig.campos.filter(c => c && c.tipo === 'documentos').length;
+    
+    html += generarScriptsDinamicos(formConfig, formularioId, usuario, datosVisita, numCamposImagen, numCamposDocumento);
+    
+    // 🔥 AQUÍ ESTABA EL ERROR VISUAL: Faltaba cerrar toda la estructura HTML
+    html += `</form></div></div></div></body></html>`;
+    
+    iframe.srcdoc = html;
+    console.log('✅ Formulario inyectado en el iframe con éxito.');
+    
+  } catch (error) {
+    console.error('❌ Error crítico construyendo el formulario:', error);
+    document.getElementById('formIframe').srcdoc = "<h2>Error generando formulario</h2><p>" + error.message + "</p>";
   }
-  
-  console.log('✅ HTML generado, longitud:', html.length);
-  
-  // Botones y cierre
-  html += generarBotonesHTML();
-  
-  // Scripts
-  const numCamposImagen = formConfig.campos.filter(c => c.tipo === 'imagen').length;
-  const numCamposDocumento = formConfig.campos.filter(c => c.tipo === 'documentos').length;
-  html += generarScriptsDinamicos(formConfig, formularioId, usuario, datosVisita, numCamposImagen, numCamposDocumento);
-  
-  html += `</body></html>`;
-  
-  iframe.srcdoc = html;
-  
-  // 🔥 Verificar después de cargar
-  setTimeout(() => {
-    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-    const seccionesImagen = iframeDoc.querySelectorAll('.file-upload-section');
-    console.log('📸 Secciones de imagen encontradas en el DOM:', seccionesImagen.length);
-  }, 500);
 }
 
 // ========== FUNCIONES AUXILIARES ==========
@@ -8480,6 +8464,9 @@ function generarBotonesHTML() {
 }
 
 function generarScriptsDinamicos(formConfig, formularioId, usuario, datosVisita, numCamposImagen, numCamposDocumento) {
+  // Escapamos comillas simples para no romper el script interno
+  const nombreSeguro = formConfig.nombre ? formConfig.nombre.replace(/'/g, "\\'") : '';
+  
   return `
   <script>
     const usuario = '${usuario}';
@@ -8508,7 +8495,7 @@ function generarScriptsDinamicos(formConfig, formularioId, usuario, datosVisita,
       }, 2000);
     }
     
-function guardarBorrador() {
+    function guardarBorrador() {
       const formData = new FormData(document.getElementById('formulario'));
       const datos = {};
       formData.forEach((value, key) => { datos[key] = value; });
@@ -8519,7 +8506,6 @@ function guardarBorrador() {
         datos[select.name] = valores.join(', ');
       });
       
-      // 🔥 NUEVO: Guardar todo el objeto de la foto/documento (Nombre + DATA Base64)
       for (let i = 0; i < fotosPorCampo.length; i++) {
         if (fotosPorCampo[i] && fotosPorCampo[i].length > 0) {
           datos['_fotos_campo_' + i] = fotosPorCampo[i]; 
@@ -8531,24 +8517,22 @@ function guardarBorrador() {
         }
       }
       
-      // Usamos try-catch porque guardar fotos grandes puede superar el límite de 5MB de localStorage
       try {
         localStorage.setItem(FORM_KEY, JSON.stringify(datos));
         mostrarIndicadorGuardado();
       } catch (e) {
         if (e.name === 'QuotaExceededError') {
-          console.warn('⚠️ Límite de caché alcanzado. Se han guardado los textos y firmas, pero no se pueden guardar más fotos en el borrador.');
+          console.warn('⚠️ Límite de caché alcanzado. Se han guardado textos y firmas.');
         }
       }
     }
     
-function cargarBorrador() {
+    function cargarBorrador() {
       const saved = localStorage.getItem(FORM_KEY);
       if (saved) {
         try {
           const datos = JSON.parse(saved);
           
-          // 🔥 1. Restaurar Arrays de Fotos y Documentos VISUALMENTE
           for (let i = 0; i < 50; i++) {
             if (datos['_fotos_campo_' + i]) {
               fotosPorCampo[i] = datos['_fotos_campo_' + i];
@@ -8560,9 +8544,8 @@ function cargarBorrador() {
             }
           }
 
-          // 2. Restaurar campos de texto, selects y Firmas
           Object.keys(datos).forEach(key => {
-            if (key.startsWith('_')) return; // Saltar variables internas
+            if (key.startsWith('_')) return; 
             const campo = document.querySelector('[name="' + key + '"]');
             
             if (campo) {
@@ -8575,7 +8558,6 @@ function cargarBorrador() {
                 campo.value = datos[key] || '';
               }
               
-              // 3. Restaurar FIRMA visualmente en el Canvas
               if (key.includes('firma') && datos[key] && datos[key].startsWith('data:image')) {
                 const img = new Image();
                 img.onload = function() {
@@ -8616,7 +8598,6 @@ function cargarBorrador() {
       window.parent.cerrarFormularioInterno();
     });
     
-    // ===== FUNCIÓN DE CONFIRMACIÓN PERSONALIZADA =====
     function customConfirm(mensaje, titulo = 'Confirmar') {
       return new Promise(function(resolve) {
         const overlay = document.createElement('div');
@@ -8630,26 +8611,24 @@ function cargarBorrador() {
       });
     }
     
-    // ===== ACTUALIZAR PREVIEW DE FOTOS =====
-function actualizarPreviewFotos(campoIndex) {
-  const previewContainer = document.getElementById('fotos-preview-' + campoIndex);
-  if (!previewContainer) return;
-  
-  let html = '';
-  if (fotosPorCampo[campoIndex] && fotosPorCampo[campoIndex].length > 0) {
-    fotosPorCampo[campoIndex].forEach((foto, idx) => {
-      html += '<div class="foto-preview-item">' +
-                '<img src="' + foto.data + '">' +
-                '<button type="button" class="btn-eliminar-foto" data-campo="' + campoIndex + '" data-idx="' + idx + '">×</button>' +
-              '</div>';
-    });
-  } else {
-    html = '<div style="color: #94a3b8; font-size: 12px; padding: 10px;">No hay fotos seleccionadas</div>';
-  }
-  previewContainer.innerHTML = html;
-}
+    function actualizarPreviewFotos(campoIndex) {
+      const previewContainer = document.getElementById('fotos-preview-' + campoIndex);
+      if (!previewContainer) return;
+      
+      let html = '';
+      if (fotosPorCampo[campoIndex] && fotosPorCampo[campoIndex].length > 0) {
+        fotosPorCampo[campoIndex].forEach((foto, idx) => {
+          html += '<div class="foto-preview-item">' +
+                    '<img src="' + foto.data + '">' +
+                    '<button type="button" class="btn-eliminar-foto" data-campo="' + campoIndex + '" data-idx="' + idx + '">×</button>' +
+                  '</div>';
+        });
+      } else {
+        html = '<div style="color: #94a3b8; font-size: 12px; padding: 10px;">No hay fotos seleccionadas</div>';
+      }
+      previewContainer.innerHTML = html;
+    }
     
-// ===== FUNCIÓN PARA COMPRIMIR IMÁGENES =====
     function comprimirImagen(base64Str, maxWidth, callback) {
       const img = new Image();
       img.onload = function() {
@@ -8666,14 +8645,11 @@ function actualizarPreviewFotos(campoIndex) {
         canvas.height = height;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
-
-        // Exportar como JPEG con 70% de calidad (excelente compresión)
         callback(canvas.toDataURL('image/jpeg', 0.7));
       };
       img.src = base64Str;
     }
 
-    // ===== CONFIGURAR BOTONES DE FOTOS =====
     function configurarBotonesFotos() {
       const secciones = document.querySelectorAll('.file-upload-section[data-campo-imagen]');
       
@@ -8715,7 +8691,6 @@ function actualizarPreviewFotos(campoIndex) {
               
               const reader = new FileReader();
               reader.onload = function(ev) {
-                // LLamamos a la función de compresión
                 comprimirImagen(ev.target.result, 1024, function(base64Optimo) {
                   if (!fotosPorCampo[campoIndex]) fotosPorCampo[campoIndex] = [];
                   fotosPorCampo[campoIndex].push({ nombre: file.name, data: base64Optimo });
@@ -8758,7 +8733,6 @@ function actualizarPreviewFotos(campoIndex) {
               
               const reader = new FileReader();
               reader.onload = function(ev) {
-                // LLamamos a la función de compresión
                 comprimirImagen(ev.target.result, 1024, function(base64Optimo) {
                   const timestamp = new Date().getTime();
                   if (!fotosPorCampo[campoIndex]) fotosPorCampo[campoIndex] = [];
@@ -8778,7 +8752,6 @@ function actualizarPreviewFotos(campoIndex) {
       }
     }
     
-    // ===== CONFIGURAR BOTONES DE DOCUMENTOS =====
     function configurarBotonesDocumentos() {
       const secciones = document.querySelectorAll('.file-upload-section[data-campo-documento]');
       
@@ -8838,7 +8811,34 @@ function actualizarPreviewFotos(campoIndex) {
       }
     }
     
-    // Eliminar foto
+    function actualizarPreviewDocumentos(campoIndex) {
+      const container = document.getElementById('documentos-preview-' + campoIndex);
+      if(!container) return;
+      let html = '';
+      
+      if(documentosPorCampo[campoIndex] && documentosPorCampo[campoIndex].length > 0) {
+        documentosPorCampo[campoIndex].forEach((doc, index) => {
+          let icono = 'fa-file';
+          if (doc.nombre.endsWith('.pdf')) icono = 'fa-file-pdf';
+          else if (doc.nombre.endsWith('.doc') || doc.nombre.endsWith('.docx')) icono = 'fa-file-word';
+          else if (doc.nombre.endsWith('.xls') || doc.nombre.endsWith('.xlsx')) icono = 'fa-file-excel';
+          
+          html += \`
+            <div class="documento-preview-item">
+              <div class="documento-info">
+                <i class="fas \${icono}" style="font-size: 1.5rem; color: #6c757d;"></i>
+                <span style="color: #495057;">\${doc.nombre}</span>
+              </div>
+              <button type="button" class="btn-eliminar-doc" data-campo-doc="\${campoIndex}" data-idx-doc="\${index}">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          \`;
+        });
+      }
+      container.innerHTML = html;
+    }
+
     document.addEventListener('click', function(e) {
       if (e.target.classList && e.target.classList.contains('btn-eliminar-foto')) {
         const campoIndex = parseInt(e.target.getAttribute('data-campo'));
@@ -8850,11 +8850,12 @@ function actualizarPreviewFotos(campoIndex) {
       }
     });
     
-    // Eliminar documento
     document.addEventListener('click', function(e) {
-      if (e.target.classList && e.target.classList.contains('btn-eliminar-doc')) {
-        const campoIndex = parseInt(e.target.getAttribute('data-campo-doc'));
-        const docIdx = parseInt(e.target.getAttribute('data-idx-doc'));
+      // Para eliminar documentos si se hace clic en el botón o en el ícono de basura interior
+      const btn = e.target.closest('.btn-eliminar-doc');
+      if (btn) {
+        const campoIndex = parseInt(btn.getAttribute('data-campo-doc'));
+        const docIdx = parseInt(btn.getAttribute('data-idx-doc'));
         if (!isNaN(campoIndex) && !isNaN(docIdx) && documentosPorCampo[campoIndex]) {
           documentosPorCampo[campoIndex].splice(docIdx, 1);
           actualizarPreviewDocumentos(campoIndex);
@@ -8862,7 +8863,6 @@ function actualizarPreviewFotos(campoIndex) {
       }
     });
     
-    // ===== UBICACIÓN =====
     document.getElementById('btnUbicacion').addEventListener('click', async function() {
       const btn = this;
       const display = document.getElementById('ubicacionDisplay');
@@ -8892,7 +8892,6 @@ function actualizarPreviewFotos(campoIndex) {
       }
     });
     
-    // ===== BOTÓN LIMPIAR FORMULARIO =====
     document.getElementById('btnLimpiarForm').addEventListener('click', async function(e) {
       e.preventDefault();
       
@@ -8934,6 +8933,7 @@ function actualizarPreviewFotos(campoIndex) {
       if (btnUbic) {
         btnUbic.innerHTML = '<i class="fas fa-location-dot"></i> Registrar ubicación';
         btnUbic.disabled = false;
+        btnUbic.style.background = '#3b82f6';
       }
       
       document.querySelectorAll('canvas').forEach(function(canvas) {
@@ -8960,7 +8960,6 @@ function actualizarPreviewFotos(campoIndex) {
       setTimeout(function() { toast.remove(); }, 2000);
     });
     
-    // ===== INICIALIZAR BOTONES DESPUÉS DE QUE EL DOM ESTÉ LISTO =====
     function inicializarTodo() {
       configurarBotonesFotos();
       configurarBotonesDocumentos();
@@ -8973,7 +8972,6 @@ function actualizarPreviewFotos(campoIndex) {
       setTimeout(inicializarTodo, 200);
     }
     
-    // ===== SUBMIT =====
     let modalProgreso = null;
     
     function crearModalProgreso() {
@@ -9016,7 +9014,7 @@ function actualizarPreviewFotos(campoIndex) {
       datos.usuario = usuario;
       datos.fechaRegistro = new Date().toLocaleString('en-GB').replace(',', '');
       datos.tipoFormulario = '${formularioId}';
-      datos.nombreFormulario = '${formConfig.nombre}';
+      datos.nombreFormulario = '${nombreSeguro}';
       
       let totalFotos = 0, totalDocumentos = 0, totalFirmas = 0;
       const archivos = { fotos: [], documentos: [] };
@@ -9169,7 +9167,6 @@ function actualizarPreviewFotos(campoIndex) {
       }
     });
     
-    // Inicializar modales de búsqueda
     function initModalBusqueda() {
       document.querySelectorAll('.modal-busqueda').forEach(modal => {
         const inputAsociado = modal.parentElement.querySelector('input[type="text"]');
@@ -9229,12 +9226,15 @@ function actualizarPreviewFotos(campoIndex) {
       });
     }
     
-    // Inicializar
     setInterval(guardarBorrador, 30000);
     cargarBorrador();
   <\/script>
   `;
 }
+
+// 🔥 Parche de seguridad final para evitar errores fantasmas de consola
+window.exportarAccesosExcel = window.exportarAccesosExcel || function() { console.log('Botón desactivado') };
+window.exportarAgendamientosExcel = window.exportarAgendamientosExcel || function() { console.log('Botón desactivado') };
 
 function getFormIcon(nombre) {
   const n = nombre.toLowerCase();
@@ -10028,6 +10028,58 @@ function generarPasoFinalZip() {
       btn.onclick = function() { location.reload(); };
       console.error("Error en llamarBackend(crearZipDeInformes):", error);
     });
+}
+
+      // ========== GENERAR CAMPO NORMAL (texto, fecha, selects, etc.) ==========
+function generarCampoNormalHTML(campo) {
+  // Blindaje por si el campo viene sin nombre desde Google Sheets
+  if (!campo || !campo.etiqueta) return '';
+  
+  const requerido = campo.obligatorio ? 'required' : '';
+  const requeridoStar = campo.obligatorio ? '<span class="required">*</span>' : '';
+  const nombreCampo = campo.etiqueta.replace(/\s+/g, '_').toLowerCase();
+  
+  let html = '<div class="form-field">';
+  html += '<label>' + campo.etiqueta + ' ' + requeridoStar + '</label>';
+  
+  if (campo.tipo === 'observaciones') {
+    html += '<textarea name="' + nombreCampo + '" rows="4" ' + requerido + ' placeholder="Escribe aquí..."></textarea>';
+  } else if (campo.tipo === 'fecha') {
+    html += '<input type="date" name="' + nombreCampo + '" ' + requerido + '>';
+  } else if (campo.tipo === 'valor') {
+    html += '<input type="number" name="' + nombreCampo + '" step="0.01" ' + requerido + ' placeholder="0.00">';
+  } else if (campo.tipo === 'lista_opciones') {
+    const numOpciones = campo.opciones ? campo.opciones.split(',').length : 0;
+    if (numOpciones > 30) {
+      // Usa el selector con buscador si hay muchas opciones
+      html += generarSelectConBusqueda(campo, nombreCampo, requerido);
+    } else {
+      // Usa el selector normal si son pocas
+      html += '<select name="' + nombreCampo + '" ' + requerido + ' style="max-width: 100%;">';
+      html += '<option value="">-- Selecciona una opción --</option>';
+      if (campo.opciones) {
+        campo.opciones.split(',').forEach(function(opt) {
+          html += '<option value="' + opt.trim() + '">' + opt.trim() + '</option>';
+        });
+      }
+      html += '</select>';
+    }
+  } else if (campo.tipo === 'lista_opciones_multiple') {
+    html += '<select name="' + nombreCampo + '" multiple ' + requerido + ' style="width: 100%; max-width: 100%; overflow-x: auto; white-space: normal;">';
+    if (campo.opciones) {
+      campo.opciones.split(',').forEach(function(opt) {
+        html += '<option value="' + opt.trim() + '">' + opt.trim() + '</option>';
+      });
+    }
+    html += '</select>';
+    html += '<div style="font-size: 12px; color: #64748b; margin-top: 6px;"><i class="fas fa-info-circle"></i> Mantén Ctrl (Cmd) para seleccionar múltiples opciones. Desliza hacia la izquierda/derecha para ver texto completo.</div>';
+  } else {
+    // Por defecto asume que es texto normal
+    html += '<input type="text" name="' + nombreCampo + '" ' + requerido + ' placeholder="Ingresa ' + campo.etiqueta.toLowerCase() + '">';
+  }
+  
+  html += '</div>';
+  return html;
 }
     </script>
   </body>
