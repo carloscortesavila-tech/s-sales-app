@@ -10280,6 +10280,31 @@ function generarCampoNormalHTML(campo) {
   html += '</div>';
   return html;
 }
+
+      function revincularBotones() {
+  console.log("🛠️ Revinculando botones de la App...");
+  
+  // Lista de IDs de botones que se suelen "romper" al volver del fondo
+  const botones = [
+    { id: 'btnApp', estado: 'appState', origen: 'welcomeState' },
+    { id: 'btnReports', estado: 'reportsState', origen: 'welcomeState' },
+    { id: 'btnSupervisar', estado: 'supervisionState', origen: 'welcomeState' },
+    { id: 'btnAdmin', estado: 'adminState', origen: 'welcomeState' }
+  ];
+
+  botones.forEach(b => {
+    const el = document.getElementById(b.id);
+    if (el) {
+      // Clonamos para eliminar listeners antiguos que quedaron "muertos"
+      const nuevoBtn = el.cloneNode(true);
+      el.parentNode.replaceChild(nuevoBtn, el);
+      nuevoBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        cambiarEstado(b.origen, b.estado, 'derecha');
+      });
+    }
+  });
+}
     </script>
   </body>
 </html>
