@@ -10170,27 +10170,27 @@ function procesarSiguientePDF() {
   }
 }
 
-// EL PASO FINAL (ZIP)
+// EL PASO FINAL (CARPETA DRIVE)
 function generarPasoFinalZip() {
   const msg = document.getElementById('progresoMensaje');
   const titulo = document.getElementById('progresoTitulo');
   const btn = document.getElementById('btnCancelarDescarga');
   
-  titulo.textContent = "📦 Comprimiendo...";
-  msg.innerHTML = '<strong>Procesando archivos en el servidor.</strong><br>Esto puede tardar un momento debido al tamaño de los PDFs...';
+  titulo.textContent = "📂 Agrupando archivos...";
+  msg.innerHTML = '<strong>Organizando los PDFs en Google Drive.</strong><br>Esto puede tardar un momento...';
   
-  const nombreZip = "Paquete_" + tipoInformeActual + "_" + (new Date().getTime());
+  const nombreCarpeta = "Informes_" + tipoInformeActual + "_" + (new Date().getTime());
   
-  llamarBackend('crearZipDeInformes', [window._pdfMasivo.fileIds, nombreZip])
+  llamarBackend('crearZipDeInformes', [window._pdfMasivo.fileIds, nombreCarpeta])
     .then(function(response) {
       window._pdfMasivo.activa = false;
       if (response.success) {
         actualizarBarraProgreso(window._pdfMasivo.cola.length, window._pdfMasivo.cola.length);
-        titulo.textContent = "✅ ¡Descarga Lista!";
-        msg.textContent = "Tu paquete ZIP está listo.";
+        titulo.textContent = "✅ ¡Archivos Listos!";
+        msg.textContent = "Tus informes han sido agrupados en una carpeta.";
         
-        // Cambiar el botón de cancelar por uno de "DESCARGAR ZIP"
-        btn.innerHTML = '<i class="fas fa-download"></i> DESCARGAR ARCHIVO ZIP';
+        // Cambiar el botón por uno de abrir carpeta
+        btn.innerHTML = '<i class="fas fa-folder-open"></i> ABRIR CARPETA';
         btn.style.background = "#28a745";
         btn.style.display = "block";
         btn.disabled = false;
@@ -10202,10 +10202,10 @@ function generarPasoFinalZip() {
         // Intentar abrir automáticamente 
         window.open(response.url, '_blank');
         
-        mostrarMensaje('✅ Paquete generado con éxito', 'success', 'reportsState');
+        mostrarMensaje('✅ Carpeta generada con éxito', 'success', 'reportsState');
       } else {
         titulo.textContent = "❌ Error";
-        msg.textContent = "No se pudo crear el ZIP: " + response.mensaje;
+        msg.textContent = "No se pudo agrupar los archivos: " + response.mensaje;
         btn.innerHTML = '<i class="fas fa-redo"></i> Reintentar';
         btn.onclick = function() { location.reload(); };
       }
@@ -10213,11 +10213,10 @@ function generarPasoFinalZip() {
     .catch(function(error) {
       window._pdfMasivo.activa = false;
       titulo.textContent = "⚠️ Tiempo de espera agotado";
-      msg.innerHTML = 'El servidor está tardando demasiado en comprimir. <br><br><strong>Tip:</strong> Revisa tu carpeta de Google Drive, es probable que el archivo ZIP aparezca allí en unos segundos aunque aquí diga error.';
+      msg.innerHTML = 'El servidor está tardando demasiado en organizar. <br><br><strong>Tip:</strong> Revisa tu Google Drive, es probable que la carpeta aparezca allí en unos segundos.';
       btn.innerHTML = '<i class="fas fa-sync"></i> Recargar App';
       btn.style.background = "#6c757d";
       btn.onclick = function() { location.reload(); };
-      console.error("Error en llamarBackend(crearZipDeInformes):", error);
     });
 }
 
