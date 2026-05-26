@@ -2164,7 +2164,9 @@ function actualizarMenuPorRol() {
   const actionGrid = document.querySelector('#welcomeState .action-grid');
   if (!actionGrid || !userData) return;
   
-  // Guardamos el HTML base del asesor para no destruirlo si ya existe
+  // 🔥 BLINDAJE: Convertir siempre a mayúsculas y quitar espacios
+  const rolUsuario = String(userData.rol).toUpperCase().trim();
+  
   const htmlAsesor = `
       <a href="#" class="action-btn btn-app" id="btnApp">
         <i class="fas fa-rocket"></i> APP
@@ -2176,7 +2178,7 @@ function actualizarMenuPorRol() {
       </a>
   `;
   
-  if (userData.rol === 'ADMIN') {
+  if (rolUsuario === 'ADMIN') {
     actionGrid.innerHTML = `
       <a href="#" class="action-btn btn-admin" id="btnAdmin">
         <i class="fas fa-users-cog"></i> ADMIN
@@ -2187,21 +2189,19 @@ function actualizarMenuPorRol() {
         <small>Ver todos los informes</small>
       </a>
     `;
-  } else if (userData.rol === 'SUPERVISOR') {
+  } else if (rolUsuario === 'SUPERVISOR') {
     actionGrid.innerHTML = `
       <a href="#" class="action-btn btn-supervisar" id="btnSupervisar">
         <i class="fas fa-eye"></i> SUPERVISAR
         <small>Ver informes de asesores</small>
       </a>
     `;
-  } else { // ASESOR
-    // Solo reescribimos si NO están los botones de asesor ya presentes
+  } else { 
     if (!document.getElementById('btnApp')) {
       actionGrid.innerHTML = htmlAsesor;
     }
   }
   
-  // 🔥 Siempre reasignamos los event listeners a los botones con blindaje
   const btnApp = document.getElementById('btnApp');
   if (btnApp) {
     const newBtnApp = btnApp.cloneNode(true);
@@ -2245,12 +2245,12 @@ function actualizarMenuPorRol() {
         await llenarSelectorConFormularios(select, true);
       } catch (error) {
         select.innerHTML = '<option value="">-- Modo Offline: Seleccione informe --</option>';
-        await llenarSelectorConFormularios(select, false); // Intenta llenar con caché
+        await llenarSelectorConFormularios(select, false);
       }
     });
   }
 
-  if (userData.rol === 'ADMIN' || userData.rol === 'SUPERVISOR') {
+  if (rolUsuario === 'ADMIN' || rolUsuario === 'SUPERVISOR') {
     const btnSupervisar = document.getElementById('btnSupervisar');
     if (btnSupervisar) {
       const nuevoBtn = btnSupervisar.cloneNode(true);
@@ -2263,7 +2263,6 @@ function actualizarMenuPorRol() {
         
         setTimeout(function() {
           iniciarTabsSupervision();
-          cargarAsesoresSelectoresSupervision();
           cargarSelectorSupervision();
           cargarAsesoresParaSupervisor();
         }, 300);
@@ -2271,7 +2270,7 @@ function actualizarMenuPorRol() {
     }
   }
   
-  if (userData.rol === 'ADMIN') {
+  if (rolUsuario === 'ADMIN') {
     const btnAdmin = document.getElementById('btnAdmin');
     if (btnAdmin) {
       const newBtnAdmin = btnAdmin.cloneNode(true);
@@ -2394,74 +2393,57 @@ function toggleUsuario(usuario, estadoActual) {
 
 // ========== FUNCIONES PARA PANEL SUPERVISIÓN ==========
 function cargarAsesoresParaSupervisor() {
-  if (userData.rol === 'ADMIN' || userData.rol === 'SUPERVISOR') {
+  if (!userData || !userData.rol) return;
+  
+  const rolUsuario = String(userData.rol).toUpperCase().trim();
+  
+  if (rolUsuario === 'ADMIN' || rolUsuario === 'SUPERVISOR') {
     
-    if (userData.rol === 'ADMIN') {
+    if (rolUsuario === 'ADMIN') {
       llamarBackend('obtenerTodosLosAsesores', [])
         .then(function(response) {
-          if (response.success) {
-            const select = document.getElementById('filtroAsesor');
+          if (response.success && response.asesores) {
             let options = '<option value="">Todos los asesores</option>';
-            
             response.asesores.forEach(function(asesor) {
               options += `<option value="${asesor.usuario}">${asesor.nombre}</option>`;
             });
             
-            select.innerHTML = options;
-            select.disabled = false;
-          } else {
-            mostrarMensaje('Error cargando asesores: ' + response.mensaje, 'error', 'supervisionState');
+            ['filtroAsesor', 'filtroAsesorAccesos', 'filtroAsesorAgendamientos'].forEach(id => {
+              const el = document.getElementById(id);
+              if(el) { el.innerHTML = options; el.disabled = false; }
+            });
           }
-        })
-        .catch(function(error) {
-          mostrarMensaje('Error de conexión: ' + error.message, 'error', 'supervisionState');
-        });
+        }).catch(e => console.warn('Aviso: ', e));
     } 
     else {
       // SUPERVISOR
       llamarBackend('obtenerAsesoresPorSupervisor', [userData.usuario])
         .then(function(response) {
-          if (response.success) {
-            const select = document.getElementById('filtroAsesor');
-            const btnFiltrar = document.getElementById('btnFiltrarSupervision');
+          if (response.success && response.asesores && response.asesores.length > 0) {
+            let options = '<option value="">Todos los asesores</option>';
+            response.asesores.forEach(function(asesor) {
+              options += `<option value="${asesor.usuario}">${asesor.nombre}</option>`;
+            });
             
-            if (!response.asesores || response.asesores.length === 0) {
-              select.innerHTML = '<option value="">No tienes asesores asignados</option>';
-              select.disabled = true;
-              
-              btnFiltrar.disabled = true;
-              btnFiltrar.style.opacity = '0.5';
-              btnFiltrar.style.cursor = 'not-allowed';
-              
-              document.getElementById('supervisorListaRegistros').innerHTML = `
-                <div style="text-align: center; padding: 60px 20px; color: #dc3545;">
-                  <i class="fas fa-exclamation-triangle" style="font-size: 4rem; margin-bottom: 20px;"></i>
-                  <h3 style="margin-bottom: 10px;">No tienes asesores asignados</h3>
-                  <p>Contacta al administrador para que te asignen asesores a supervisar.</p>
-                </div>
-              `;
-              document.getElementById('supervisorInfoRegistros').style.display = 'none';
-              
-            } else {
-              let options = '<option value="">Todos los asesores</option>';
-              
-              response.asesores.forEach(function(asesor) {
-                options += `<option value="${asesor.usuario}">${asesor.nombre}</option>`;
-              });
-              
-              select.innerHTML = options;
-              select.disabled = false;
+            ['filtroAsesor', 'filtroAsesorAccesos', 'filtroAsesorAgendamientos'].forEach(id => {
+              const el = document.getElementById(id);
+              if(el) { el.innerHTML = options; el.disabled = false; }
+            });
+            
+            const btnFiltrar = document.getElementById('btnFiltrarSupervision');
+            if (btnFiltrar) {
               btnFiltrar.disabled = false;
               btnFiltrar.style.opacity = '1';
               btnFiltrar.style.cursor = 'pointer';
             }
           } else {
-            mostrarMensaje('Error cargando asesores: ' + response.mensaje, 'error', 'supervisionState');
+            // Bloquea los selectores si la lista está vacía
+            ['filtroAsesor', 'filtroAsesorAccesos', 'filtroAsesorAgendamientos'].forEach(id => {
+              const el = document.getElementById(id);
+              if(el) { el.innerHTML = '<option value="">No tienes asesores asignados</option>'; el.disabled = true; }
+            });
           }
-        })
-        .catch(function(error) {
-          mostrarMensaje('Error de conexión: ' + error.message, 'error', 'supervisionState');
-        });
+        }).catch(e => console.warn('Aviso: ', e));
     }
   }
 }
@@ -9732,10 +9714,8 @@ function iniciarTabsSupervision() {
   if (tabAccesos) {
     const nuevoTab = tabAccesos.cloneNode(true);
     tabAccesos.parentNode.replaceChild(nuevoTab, tabAccesos);
-    
     nuevoTab.onclick = function(e) {
       e.preventDefault();
-      
       document.getElementById('panelInformesSupervision').style.display = 'none';
       document.getElementById('panelAccesosSupervision').style.display = 'block';
       document.getElementById('panelAgendamientosSupervision').style.display = 'none';
@@ -9744,6 +9724,7 @@ function iniciarTabsSupervision() {
       document.getElementById('tabInformes').style.background = 'var(--gray)';
       document.getElementById('tabAgendamientosSupervision').style.background = 'var(--gray)';
       
+      // 🔥 Forzar la carga de datos inmediatamente al entrar
       cargarDatosAccesos();
       return false;
     };
@@ -9754,10 +9735,8 @@ function iniciarTabsSupervision() {
   if (tabAgendamientos) {
     const nuevoTab = tabAgendamientos.cloneNode(true);
     tabAgendamientos.parentNode.replaceChild(nuevoTab, tabAgendamientos);
-    
     nuevoTab.onclick = function(e) {
       e.preventDefault();
-      
       document.getElementById('panelInformesSupervision').style.display = 'none';
       document.getElementById('panelAccesosSupervision').style.display = 'none';
       document.getElementById('panelAgendamientosSupervision').style.display = 'block';
@@ -9766,6 +9745,7 @@ function iniciarTabsSupervision() {
       document.getElementById('tabInformes').style.background = 'var(--gray)';
       document.getElementById('tabAccesos').style.background = 'var(--gray)';
       
+      // 🔥 Forzar la carga de datos inmediatamente al entrar
       cargarDatosAgendamientos();
       return false;
     };
@@ -9776,10 +9756,8 @@ function iniciarTabsSupervision() {
   if (tabInformes) {
     const nuevoTab = tabInformes.cloneNode(true);
     tabInformes.parentNode.replaceChild(nuevoTab, tabInformes);
-    
     nuevoTab.onclick = function(e) {
       e.preventDefault();
-      
       document.getElementById('panelInformesSupervision').style.display = 'block';
       document.getElementById('panelAccesosSupervision').style.display = 'none';
       document.getElementById('panelAgendamientosSupervision').style.display = 'none';
