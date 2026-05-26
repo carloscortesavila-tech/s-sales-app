@@ -10352,6 +10352,108 @@ document.addEventListener("visibilitychange", function() {
       }).catch(err => console.error('Error al registrar SW:', err));
     });
   }
+      // ========== VIZUALIZACIÓN DE ACCESOS EN SUPERVISIÓN ==========
+function mostrarAccesosSupervision(registros) {
+  const container = document.getElementById('accesosLista');
+  if (!container) return;
+  
+  let html = '<div style="display: flex; flex-direction: column; gap: 12px;">';
+  
+  registros.forEach(function(registro, index) {
+    // Normalización de campos por si vienen en mayúsculas o minúsculas del servidor
+    let usuario = registro['usuario'] || registro['USUARIO'] || 'Desconocido';
+    let fecha = registro['fecha'] || registro['FECHA'] || registro['fechaRegistro'] || registro['FECHAREGISTRO'] || '';
+    let ciudad = registro['ciudad'] || registro['CIUDAD'] || registro['ciudad_manual'] || 'No disponible';
+    let detalle = registro['detalle'] || registro['DETALLE'] || 'Ingreso al sistema';
+
+    html += `
+      <div class="client-card" style="cursor: default; margin-bottom: 0; padding: 15px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <div class="client-number" style="background: var(--primary-light); color: white; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 0.85rem; font-weight: 600;">${index + 1}</div>
+            <div>
+              <p style="margin: 0; color: var(--gray-dark); font-weight: 600; font-size: 0.95rem;">
+                <i class="fas fa-user"></i> ${usuario}
+              </p>
+              <p style="margin: 4px 0 0 0; color: var(--gray); font-size: 0.85rem;">
+                <i class="fas fa-info-circle"></i> ${detalle}
+              </p>
+              <p style="margin: 2px 0 0 0; color: var(--gray); font-size: 0.85rem;">
+                <i class="fas fa-map-marker-alt"></i> EDS / Ubicación: ${ciudad}
+              </p>
+            </div>
+          </div>
+          <div style="text-align: right;">
+            <span class="estado-badge" style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 4px 10px; border-radius: 30px; font-size: 0.75rem; font-weight: 600;">AUTENTICADO</span>
+            <p style="margin: 6px 0 0 0; color: var(--gray); font-size: 0.8rem; font-weight: 500;">
+              ${fecha}
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+  
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+// ========== VIZUALIZACIÓN DE AGENDAMIENTOS EN SUPERVISIÓN ==========
+function mostrarAgendamientosSupervision(registros) {
+  const container = document.getElementById('agendamientosLista');
+  if (!container) return;
+  
+  let html = '<div style="display: flex; flex-direction: column; gap: 12px;">';
+  
+  registros.forEach(function(item, index) {
+    // Lectura de los campos respetando la estructura de tu base de datos maestro
+    let usuario = item['USUARIO'] || item['usuario'] || 'Desconocido';
+    let codigo = item['CODIGO'] || item['codigo'] || 'N/A';
+    let nombre = item['NOMBRE'] || item['nombre'] || 'Sin nombre';
+    let fecha = item['FECHA AGENDADA'] || item['fecha'] || '';
+    let hora = item['HORA AGENDADA'] || item['hora'] || '';
+    let estado = String(item['ESTADO'] || item['estado'] || 'PENDIENTE').toUpperCase();
+    let observacion = item['OBSERVACION'] || item['observacion'] || '';
+    
+    // Asignación dinámica de colores para los estados
+    let estiloBadge = 'background: rgba(107, 114, 128, 0.1); color: var(--gray);';
+    if (estado === 'PENDIENTE') estiloBadge = 'background: rgba(245, 158, 11, 0.1); color: #f59e0b;';
+    if (estado === 'CUMPLIDO' || estado === 'COMPLETADO') estiloBadge = 'background: rgba(16, 185, 129, 0.1); color: #10b981;';
+    if (estado === 'ENCURSO') estiloBadge = 'background: rgba(37, 99, 235, 0.1); color: var(--primary-light);';
+    if (estado === 'CANCELADO' || estado === 'NO CUMPLIDO') estiloBadge = 'background: rgba(239, 68, 68, 0.1); color: #ef4444;';
+    
+    html += `
+      <div class="client-card" style="cursor: default; margin-bottom: 0; padding: 15px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+          <div style="display: flex; align-items: flex-start; gap: 12px;">
+            <div class="client-number" style="background: var(--primary); color: white; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 0.85rem; font-weight: 600; flex-shrink: 0;">${index + 1}</div>
+            <div>
+              <p style="margin: 0; color: var(--gray-dark); font-weight: 600; font-size: 0.95rem;">
+                <i class="fas fa-gas-pump"></i> ${nombre}
+              </p>
+              <p style="margin: 3px 0 0 0; color: var(--gray); font-size: 0.85rem;">
+                <strong>Código EDS:</strong> ${codigo} | <strong>Asesor:</strong> ${usuario}
+              </p>
+              ${observacion ? `<p style="margin: 5px 0 0 0; color: #475569; font-style: italic; font-size: 0.85rem; background: #f1f5f9; padding: 4px 8px; border-radius: 8px;">"${observacion}"</p>` : ''}
+            </div>
+          </div>
+          <div style="text-align: right; flex-shrink: 0;">
+            <span class="estado-badge" style="${estiloBadge} padding: 4px 10px; border-radius: 30px; font-size: 0.75rem; font-weight: 600;">${estado}</span>
+            <p style="margin: 8px 0 0 0; color: var(--gray-dark); font-size: 0.85rem; font-weight: 600;">
+              📅 ${fecha}
+            </p>
+            <p style="margin: 2px 0 0 0; color: var(--gray); font-size: 0.8rem;">
+              🕒 ${hora}
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+  
+  html += '</div>';
+  container.innerHTML = html;
+}
     </script>
   </body>
 </html>
