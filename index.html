@@ -1195,245 +1195,6 @@ background:transparent;
     <h1>PANEL DE SUPERVISIÓN</h1>
     <p>Visualización de informes, accesos y agendamientos de asesores</p>
   </div>
-
-  <!-- ========== ESTADO SUPERADMIN ========== -->
-<div class="app-state" id="superAdminState">
-  <div class="state-header">
-    <div class="btn-back" id="backFromSuperAdmin">
-      <i class="fas fa-arrow-left"></i>
-    </div>
-    <div class="logo mini-logo">
-      <img src="https://lh3.googleusercontent.com/d/1lLqo-RkNlHAtOkEQlht6pnjpglIpaUWj" alt="Logo Mini" class="logo-image">
-    </div>
-    <h1>PANEL SUPER ADMIN</h1>
-    <p>Control total del sistema S-SALES</p>
-  </div>
-  
-  <div class="state-content">
-    <div class="buttons-container">
-      <div class="user-info">
-        Usuario: <span id="superAdminUser">Usuario</span> (SUPERADMIN)
-      </div>
-      
-      <!-- TABS SUPERADMIN -->
-      <div style="display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 2px solid var(--gray-light); overflow-x: auto; padding-bottom: 5px;">
-        <button id="tabSAUsuarios" class="btn-primary" style="flex: 1; min-width: 150px; background: var(--primary);">
-          <i class="fas fa-users-cog"></i> USUARIOS
-        </button>
-        <button id="tabSAClientes" class="btn-primary" style="flex: 1; min-width: 150px; background: var(--gray);">
-          <i class="fas fa-store"></i> CREAR CLIENTE
-        </button>
-        <button id="tabSAAsignar" class="btn-primary" style="flex: 1; min-width: 150px; background: var(--gray);">
-          <i class="fas fa-link"></i> ASIGNAR CLIENTE
-        </button>
-      </div>
-      
-      <!-- PANEL USUARIOS -->
-      <div id="panelSAUsuarios" style="display: block;">
-        <div style="margin-bottom: 20px; text-align: right;">
-          <button class="btn-primary" id="btnSNCrearUsuario" style="padding: 12px 20px; width: auto; background: var(--success);">
-            <i class="fas fa-user-plus"></i> + NUEVO USUARIO
-          </button>
-        </div>
-        
-        <div class="form-group" style="margin-bottom: 15px;">
-          <input type="text" id="buscadorSAUsuarios" class="form-control" placeholder="Buscar usuario para activar/desactivar...">
-        </div>
-        
-        <div class="table-container">
-          <table class="agendamientos-table" style="min-width: 800px;">
-            <thead>
-              <tr>
-                <th>NIT</th>
-                <th>USUARIO</th>
-                <th>NOMBRE</th>
-                <th>ROL</th>
-                <th>ESTADO</th>
-                <th>ACCIONES</th>
-              </tr>
-            </thead>
-            <tbody id="tablaSAUsuariosBody">
-              <tr>
-                <td colspan="6" style="text-align: center; padding: 20px;">Cargando usuarios...</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      
-      <!-- PANEL CREAR CLIENTE MAESTRO -->
-      <div id="panelSAClientes" style="display: none;">
-        <div style="background: var(--bg-tint); border: 1px solid var(--border); padding: 20px; border-radius: var(--radius);">
-          <h3 style="margin-bottom: 20px; color: var(--primary);"><i class="fas fa-plus-circle"></i> Nuevo Cliente en Base Maestra</h3>
-          
-          <form id="formCrearClienteMaestro">
-            <div class="action-grid two-columns" style="margin-top: 0;">
-              <div class="form-group">
-                <label>Usuario Cliente *</label>
-                <input type="text" id="cc_usuario" class="form-control" required>
-              </div>
-              <div class="form-group">
-                <label>Código Cliente *</label>
-                <input type="text" id="cc_codigo" class="form-control" required>
-              </div>
-              <div class="form-group">
-                <label>Identificación Cliente *</label>
-                <input type="text" id="cc_identificacion" class="form-control" required>
-              </div>
-              <div class="form-group">
-                <label>Tipo Cliente *</label>
-                <input type="text" id="cc_tipo" class="form-control" required>
-              </div>
-              <div class="form-group">
-                <label>Nombre Cliente *</label>
-                <input type="text" id="cc_nombre" class="form-control" required>
-              </div>
-              <div class="form-group">
-                <label>Contacto Cliente</label>
-                <input type="text" id="cc_contacto" class="form-control">
-              </div>
-              <div class="form-group">
-                <label>Teléfono Cliente</label>
-                <input type="text" id="cc_telefono" class="form-control">
-              </div>
-              <div class="form-group">
-                <label>Email Cliente</label>
-                <input type="email" id="cc_email" class="form-control">
-              </div>
-              <div class="form-group">
-                <label>Dirección Cliente</label>
-                <input type="text" id="cc_direccion" class="form-control">
-              </div>
-              <div class="form-group">
-                <label>Ciudad Cliente *</label>
-                <input type="text" id="cc_ciudad" class="form-control" required>
-              </div>
-              <div class="form-group">
-                <label>País Cliente</label>
-                <input type="text" id="cc_pais" class="form-control" value="Colombia">
-              </div>
-              <div class="form-group">
-                <label>Región</label>
-                <input type="text" id="cc_region" class="form-control">
-              </div>
-              <div class="form-group">
-                <label>Latitud</label>
-                <input type="number" step="any" id="cc_latitud" class="form-control" placeholder="Ej: 4.6097100">
-              </div>
-              <div class="form-group">
-                <label>Longitud</label>
-                <input type="number" step="any" id="cc_longitud" class="form-control" placeholder="Ej: -74.0817500">
-              </div>
-            </div>
-            <button type="submit" class="btn-primary" style="margin-top: 20px;">
-              <i class="fas fa-save"></i> GUARDAR CLIENTE EN MAESTRA
-            </button>
-          </form>
-        </div>
-      </div>
-      
-      <!-- PANEL ASIGNAR CLIENTE -->
-      <div id="panelSAAsignar" style="display: none;">
-        <div style="background: var(--bg-tint); border: 1px solid var(--border); padding: 20px; border-radius: var(--radius);">
-          <h3 style="margin-bottom: 20px; color: var(--primary);"><i class="fas fa-handshake"></i> Asignar Cliente a Usuario</h3>
-          
-          <form id="formAsignarCliente">
-            <div class="form-group">
-              <label>Seleccionar Usuario (Asesor/Supervisor/Admin) *</label>
-              <select id="ac_usuario" class="form-control" required>
-                <option value="">Cargando usuarios...</option>
-              </select>
-            </div>
-            
-            <div class="form-group">
-              <label>Seleccionar Cliente *</label>
-              <select id="ac_cliente" class="form-control" required>
-                <option value="">Cargando clientes de la maestra...</option>
-              </select>
-              <small style="color: var(--gray);">El cliente ya debe existir en la base maestra.</small>
-            </div>
-            
-            <button type="submit" class="btn-primary" style="margin-top: 20px;">
-              <i class="fas fa-link"></i> ASIGNAR CLIENTE
-            </button>
-          </form>
-        </div>
-      </div>
-      
-    </div>
-  </div>
-</div>
-
-<!-- MODAL CREAR USUARIO (SUPERADMIN) -->
-<div id="modalCrearUsuarioSA" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 30000; align-items: center; justify-content: center;">
-  <div style="background: white; border-radius: 15px; padding: 30px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto;">
-    <h3 style="margin-bottom: 20px; color: var(--primary);"><i class="fas fa-user-plus"></i> Crear Nuevo Usuario</h3>
-    
-    <form id="formCrearUsuarioSA">
-      <div class="action-grid two-columns" style="margin-top: 0; gap: 15px;">
-        <!-- NIT FIJO E INMODIFICABLE -->
-        <div class="form-group">
-          <label>NIT Empresa</label>
-          <input type="text" id="nu_nit" class="form-control" value="901199166" readonly style="background: #e2e8f0; cursor: not-allowed; font-weight: bold;">
-        </div>
-        
-        <div class="form-group">
-          <label>Rol *</label>
-          <select id="nu_rol" class="form-control" required>
-            <option value="">Seleccione...</option>
-            <option value="ASESOR">Asesor</option>
-            <option value="SUPERVISOR">Supervisor</option>
-            <option value="ADMIN">Administrador</option>
-          </select>
-        </div>
-        
-        <div class="form-group">
-          <label>Nombre Completo *</label>
-          <input type="text" id="nu_nombre" class="form-control" required>
-        </div>
-        
-        <div class="form-group">
-          <label>Usuario (Login) *</label>
-          <input type="text" id="nu_usuario" class="form-control" required>
-        </div>
-        
-        <div class="form-group">
-          <label>Contraseña *</label>
-          <input type="text" id="nu_password" class="form-control" required>
-        </div>
-        
-        <div class="form-group">
-          <label>Correo Electrónico *</label>
-          <input type="email" id="nu_correo" class="form-control" required>
-        </div>
-        
-        <div class="form-group">
-          <label>Supervisor Asignado</label>
-          <select id="nu_supervisor" class="form-control">
-            <option value="">Ninguno / Cargando...</option>
-          </select>
-        </div>
-        
-        <div class="form-group">
-          <label>Usuario Activo *</label>
-          <select id="nu_activo" class="form-control" required>
-            <option value="SI">SI</option>
-            <option value="NO">NO</option>
-          </select>
-        </div>
-      </div>
-      
-      <div style="background: #e0f2fe; padding: 10px; border-radius: 8px; margin-top: 15px; font-size: 13px; color: #0284c7;">
-        <i class="fas fa-info-circle"></i> La Fecha de Registro y el Secret Code (6 dígitos) se generarán automáticamente al guardar.
-      </div>
-      
-      <div style="display: flex; gap: 15px; margin-top: 25px;">
-        <button type="submit" class="btn-primary" style="flex: 1;"><i class="fas fa-save"></i> Guardar Usuario</button>
-        <button type="button" id="btnCerrarModalUserSA" class="btn-logout" style="flex: 1;">Cancelar</button>
-      </div>
-    </form>
-  </div>
-</div>
   
   <div class="state-content">
     <div class="buttons-container">
@@ -1612,6 +1373,152 @@ background:transparent;
     © 2026 S-SALES • Panel de Supervisión
   </div>
 </div>
+
+<div class="app-state" id="superAdminState">
+  <div class="state-header">
+    <div class="btn-back" id="backFromSuperAdmin">
+      <i class="fas fa-arrow-left"></i>
+    </div>
+    <div class="logo mini-logo">
+      <img src="https://lh3.googleusercontent.com/d/1lLqo-RkNlHAtOkEQlht6pnjpglIpaUWj" alt="Logo Mini" class="logo-image">
+    </div>
+    <h1>PANEL SUPER ADMIN</h1>
+    <p>Control total del sistema S-SALES</p>
+  </div>
+  
+  <div class="state-content">
+    <div class="buttons-container">
+      <div class="user-info">
+        Usuario: <span id="superAdminUser">Usuario</span> (SUPERADMIN)
+      </div>
+      
+      <div style="display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 2px solid var(--gray-light); overflow-x: auto; padding-bottom: 5px;">
+        <button id="tabSAUsuarios" class="btn-primary" style="flex: 1; min-width: 150px; background: var(--primary);">
+          <i class="fas fa-users-cog"></i> USUARIOS
+        </button>
+        <button id="tabSAClientes" class="btn-primary" style="flex: 1; min-width: 150px; background: var(--gray);">
+          <i class="fas fa-store"></i> CREAR CLIENTE
+        </button>
+        <button id="tabSAAsignar" class="btn-primary" style="flex: 1; min-width: 150px; background: var(--gray);">
+          <i class="fas fa-link"></i> ASIGNAR CLIENTE
+        </button>
+      </div>
+      
+      <div id="panelSAUsuarios" style="display: block;">
+        <div style="margin-bottom: 20px; text-align: right;">
+          <button class="btn-primary" id="btnSNCrearUsuario" style="padding: 12px 20px; width: auto; background: var(--success);">
+            <i class="fas fa-user-plus"></i> + NUEVO USUARIO
+          </button>
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 15px;">
+          <input type="text" id="buscadorSAUsuarios" class="form-control" placeholder="Buscar usuario para activar/desactivar...">
+        </div>
+        
+        <div class="table-container">
+          <table class="agendamientos-table" style="min-width: 800px;">
+            <thead>
+              <tr>
+                <th>NIT</th>
+                <th>USUARIO</th>
+                <th>NOMBRE</th>
+                <th>ROL</th>
+                <th>ESTADO</th>
+                <th>ACCIONES</th>
+              </tr>
+            </thead>
+            <tbody id="tablaSAUsuariosBody">
+              <tr>
+                <td colspan="6" style="text-align: center; padding: 20px;">Cargando usuarios...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <div id="panelSAClientes" style="display: none;">
+        <div style="background: var(--bg-tint); border: 1px solid var(--border); padding: 20px; border-radius: var(--radius);">
+          <h3 style="margin-bottom: 20px; color: var(--primary);"><i class="fas fa-plus-circle"></i> Nuevo Cliente en Base Maestra</h3>
+          
+          <form id="formCrearClienteMaestro">
+            <div class="action-grid two-columns" style="margin-top: 0;">
+              <div class="form-group"><label>Usuario Cliente *</label><input type="text" id="cc_usuario" class="form-control" required></div>
+              <div class="form-group"><label>Código Cliente *</label><input type="text" id="cc_codigo" class="form-control" required></div>
+              <div class="form-group"><label>Identificación Cliente *</label><input type="text" id="cc_identificacion" class="form-control" required></div>
+              <div class="form-group"><label>Tipo Cliente *</label><input type="text" id="cc_tipo" class="form-control" required></div>
+              <div class="form-group"><label>Nombre Cliente *</label><input type="text" id="cc_nombre" class="form-control" required></div>
+              <div class="form-group"><label>Contacto Cliente</label><input type="text" id="cc_contacto" class="form-control"></div>
+              <div class="form-group"><label>Teléfono Cliente</label><input type="text" id="cc_telefono" class="form-control"></div>
+              <div class="form-group"><label>Email Cliente</label><input type="email" id="cc_email" class="form-control"></div>
+              <div class="form-group"><label>Dirección Cliente</label><input type="text" id="cc_direccion" class="form-control"></div>
+              <div class="form-group"><label>Ciudad Cliente *</label><input type="text" id="cc_ciudad" class="form-control" required></div>
+              <div class="form-group"><label>País Cliente</label><input type="text" id="cc_pais" class="form-control" value="Colombia"></div>
+              <div class="form-group"><label>Región</label><input type="text" id="cc_region" class="form-control"></div>
+              <div class="form-group"><label>Latitud</label><input type="number" step="any" id="cc_latitud" class="form-control" placeholder="Ej: 4.6097"></div>
+              <div class="form-group"><label>Longitud</label><input type="number" step="any" id="cc_longitud" class="form-control" placeholder="Ej: -74.0817"></div>
+            </div>
+            <button type="submit" class="btn-primary" style="margin-top: 20px;"><i class="fas fa-save"></i> GUARDAR CLIENTE EN MAESTRA</button>
+          </form>
+        </div>
+      </div>
+      
+      <div id="panelSAAsignar" style="display: none;">
+        <div style="background: var(--bg-tint); border: 1px solid var(--border); padding: 20px; border-radius: var(--radius);">
+          <h3 style="margin-bottom: 20px; color: var(--primary);"><i class="fas fa-handshake"></i> Asignar Cliente a Usuario</h3>
+          
+          <form id="formAsignarCliente">
+            <div class="form-group">
+              <label>Seleccionar Usuario *</label>
+              <select id="ac_usuario" class="form-control" required><option value="">Cargando usuarios...</option></select>
+            </div>
+            <div class="form-group">
+              <label>Seleccionar Cliente *</label>
+              <select id="ac_cliente" class="form-control" required><option value="">Cargando clientes...</option></select>
+            </div>
+            <button type="submit" class="btn-primary" style="margin-top: 20px;"><i class="fas fa-link"></i> ASIGNAR CLIENTE</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="state-footer">
+    © 2026 S-SALES • Panel de Super Admin
+  </div>
+</div>
+
+<div id="modalCrearUsuarioSA" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 30000; align-items: center; justify-content: center;">
+  <div style="background: white; border-radius: 15px; padding: 30px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto;">
+    <h3 style="margin-bottom: 20px; color: var(--primary);"><i class="fas fa-user-plus"></i> Crear Nuevo Usuario</h3>
+    <form id="formCrearUsuarioSA">
+      <div class="action-grid two-columns" style="margin-top: 0; gap: 15px;">
+        <div class="form-group"><label>NIT Empresa</label><input type="text" id="nu_nit" class="form-control" value="901199166" readonly style="background: #e2e8f0; cursor: not-allowed; font-weight: bold;"></div>
+        <div class="form-group">
+          <label>Rol *</label>
+          <select id="nu_rol" class="form-control" required>
+            <option value="">Seleccione...</option><option value="ASESOR">Asesor</option><option value="SUPERVISOR">Supervisor</option><option value="ADMIN">Administrador</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Nombre Completo *</label><input type="text" id="nu_nombre" class="form-control" required></div>
+        <div class="form-group"><label>Usuario (Login) *</label><input type="text" id="nu_usuario" class="form-control" required></div>
+        <div class="form-group"><label>Contraseña *</label><input type="text" id="nu_password" class="form-control" required></div>
+        <div class="form-group"><label>Correo Electrónico *</label><input type="email" id="nu_correo" class="form-control" required></div>
+        <div class="form-group"><label>Supervisor Asignado</label><select id="nu_supervisor" class="form-control"><option value="">Ninguno / Cargando...</option></select></div>
+        <div class="form-group">
+          <label>Usuario Activo *</label>
+          <select id="nu_activo" class="form-control" required><option value="SI">SI</option><option value="NO">NO</option></select>
+        </div>
+      </div>
+      <div style="background: #e0f2fe; padding: 10px; border-radius: 8px; margin-top: 15px; font-size: 13px; color: #0284c7;">
+        <i class="fas fa-info-circle"></i> La Fecha de Registro y el Secret Code se generarán automáticamente.
+      </div>
+      <div style="display: flex; gap: 15px; margin-top: 25px;">
+        <button type="submit" class="btn-primary" style="flex: 1;"><i class="fas fa-save"></i> Guardar Usuario</button>
+        <button type="button" id="btnCerrarModalUserSA" class="btn-logout" style="flex: 1;">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>    
 
 <div id="modalRecuperar" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 20000; align-items: center; justify-content: center;">
   <div style="background: white; border-radius: 15px; padding: 30px; max-width: 400px; width: 90%;">
