@@ -1466,21 +1466,29 @@ background:transparent;
         <div style="background: var(--bg-tint); border: 1px solid var(--border); padding: 20px; border-radius: var(--radius);">
           <h3 style="margin-bottom: 20px; color: var(--primary);"><i class="fas fa-handshake"></i> Asignar Cliente a Usuario</h3>
           
-          <form id="formAsignarCliente">
-            <div class="form-group">
-              <label>Seleccionar Usuario *</label>
-              <select id="ac_usuario" class="form-control" required><option value="">Cargando usuarios...</option></select>
+          <div class="form-group" style="margin-bottom: 20px;">
+            <label style="font-weight: bold; color: var(--primary);">1. Seleccionar Usuario (Destino) *</label>
+            <select id="ac_usuario" class="form-control" style="border: 2px solid var(--accent);">
+              <option value="">Cargando usuarios...</option>
+            </select>
+          </div>
+          
+          <div class="form-group" style="margin-bottom: 15px;">
+            <label style="font-weight: bold; color: var(--primary);">2. Buscar Cliente en Base Maestra *</label>
+            <div style="position: relative;">
+              <i class="fas fa-search" style="position: absolute; left: 15px; top: 15px; color: var(--gray);"></i>
+              <input type="text" id="buscadorSAClientesMaestros" class="form-control" placeholder="Buscar por código, nombre o NIT..." style="padding-left: 45px;">
             </div>
-            <div class="form-group">
-              <label>Seleccionar Cliente *</label>
-              <select id="ac_cliente" class="form-control" required><option value="">Cargando clientes...</option></select>
+          </div>
+          
+          <div id="listaSAClientesMaestros" style="max-height: 400px; overflow-y: auto; background: white; border: 1px solid var(--border); border-radius: 12px; padding: 10px;">
+            <div style="text-align: center; padding: 30px; color: var(--gray);">
+              <i class="fas fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 10px;"></i><br>
+              Cargando clientes de la base maestra...
             </div>
-            <button type="submit" class="btn-primary" style="margin-top: 20px;"><i class="fas fa-link"></i> ASIGNAR CLIENTE</button>
-          </form>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
   
   <div class="state-footer">
     © 2026 S-SALES • Panel de Super Admin
@@ -10842,62 +10850,115 @@ document.getElementById('formCrearClienteMaestro')?.addEventListener('submit', f
     });
 });
 
-// Cargar Selectores de Asignación
+// ===== CARGAR Y BUSCAR CLIENTES (NUEVO DISEÑO CON TARJETAS) =====
+let clientesMaestrosGlobales = [];
+
 function cargarSelectoresAsignacion() {
   const selectUsu = document.getElementById('ac_usuario');
-  const selectCli = document.getElementById('ac_cliente');
+  const contenedorClientes = document.getElementById('listaSAClientesMaestros');
   
   selectUsu.innerHTML = '<option value="">Cargando usuarios...</option>';
-  selectCli.innerHTML = '<option value="">Cargando clientes...</option>';
+  contenedorClientes.innerHTML = '<div style="text-align: center; padding: 30px; color: var(--gray);"><i class="fas fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 10px;"></i><br>Cargando clientes de la base maestra...</div>';
 
-  if (usuariosGlobalesSA.length > 0) {
-    let opts = '<option value="">-- Seleccione un usuario --</option>';
+  // 1. Cargar la lista de Usuarios
+  if (usuariosGlobalesSA && usuariosGlobalesSA.length > 0) {
+    let opts = '<option value="">-- Primero seleccione a qué usuario le va a asignar --</option>';
     usuariosGlobalesSA.forEach(u => { opts += `<option value="${u.usuario}">${u.nombre} (${u.rol})</option>`; });
     selectUsu.innerHTML = opts;
   }
 
+  // 2. Cargar los clientes de la base maestra
   llamarBackend('obtenerTodosLosClientesMaestros', [])
     .then(response => {
       if (response.success) {
-        let optsCli = '<option value="">-- Seleccione el cliente maestro --</option>';
-        response.clientes.forEach(c => {
-          optsCli += `<option value="${c.codigo}">${c.nombre} (Cód: ${c.codigo})</option>`;
-        });
-        selectCli.innerHTML = optsCli;
+        clientesMaestrosGlobales = response.clientes;
+        renderizarClientesMaestrosSA(clientesMaestrosGlobales);
       } else {
-        selectCli.innerHTML = '<option value="">Error cargando clientes</option>';
+        contenedorClientes.innerHTML = `<div style="color: #dc3545; text-align: center; padding: 20px;"><i class="fas fa-exclamation-triangle"></i> ${response.mensaje}</div>`;
       }
+    }).catch(error => {
+      contenedorClientes.innerHTML = `<div style="color: #dc3545; text-align: center; padding: 20px;">Error de red al cargar clientes.</div>`;
     });
 }
 
-// Asignar Cliente
-document.getElementById('formAsignarCliente')?.addEventListener('submit', function(e) {
-  e.preventDefault();
+function renderizarClientesMaestrosSA(clientes) {
+  const contenedor = document.getElementById('listaSAClientesMaestros');
   
-  const usuarioDestino = document.getElementById('ac_usuario').value;
-  const codigoCliente = document.getElementById('ac_cliente').value;
+  if (!clientes || clientes.length === 0) {
+    contenedor.innerHTML = '<div style="text-align: center; padding: 30px; color: var(--gray);"><i class="fas fa-search" style="font-size: 24px; margin-bottom: 10px;"></i><br>No se encontraron clientes con esa búsqueda.</div>';
+    return;
+  }
   
-  const btn = e.target.querySelector('button[type="submit"]');
-  const textoOriginal = btn.innerHTML;
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Asignando...';
-  btn.disabled = true;
+  let html = '<div style="display: flex; flex-direction: column; gap: 10px;">';
+  
+  // Limitar a los primeros 50 para no congelar el navegador, el usuario puede buscar para ver el resto
+  const clientesMostrados = clientes.slice(0, 50); 
+  
+  clientesMostrados.forEach(c => {
+    html += `
+      <div class="client-card" style="display: flex; justify-content: space-between; align-items: center; padding: 15px; margin: 0; background: #f8fafc; border: 1px solid #e2e8f0;">
+        <div>
+          <h4 style="margin: 0; color: var(--primary); font-size: 15px;"><i class="fas fa-store"></i> ${c.nombre}</h4>
+          <p style="margin: 5px 0 0 0; font-size: 13px; color: var(--text-light);">
+            <strong>Cód:</strong> ${c.codigo} | <strong>ID:</strong> ${c.identificacion || 'N/A'} | <strong>📍</strong> ${c.ciudad || 'N/A'}
+          </p>
+        </div>
+        <button onclick="asignarClienteDesdeBuscador('${c.codigo}')" class="btn-primary" style="padding: 8px 15px; width: auto; font-size: 12px; background: var(--success); border-radius: 20px;">
+          <i class="fas fa-link"></i> ASIGNAR
+        </button>
+      </div>
+    `;
+  });
+  
+  if (clientes.length > 50) {
+    html += `<div style="text-align: center; padding: 10px; font-size: 12px; color: var(--gray);">Mostrando 50 de ${clientes.length} resultados. Usa el buscador para encontrar más.</div>`;
+  }
+  
+  html += '</div>';
+  contenedor.innerHTML = html;
+}
 
-  llamarBackend('asignarClienteDirectoAUsuario', [usuarioDestino, codigoCliente])
-    .then(response => {
-      btn.innerHTML = textoOriginal;
-      btn.disabled = false;
-      if (response.success) {
-        mostrarMensaje('✅ Cliente asignado correctamente', 'success', 'superAdminState');
-        document.getElementById('formAsignarCliente').reset();
-      } else {
-        mostrarMensaje('❌ Error: ' + response.mensaje, 'error', 'superAdminState');
-      }
-    }).catch(error => {
-      btn.innerHTML = textoOriginal;
-      btn.disabled = false;
-      mostrarMensaje('Error de conexión', 'error', 'superAdminState');
-    });
+// Evento de búsqueda en tiempo real
+document.getElementById('buscadorSAClientesMaestros')?.addEventListener('input', function(e) {
+  const term = e.target.value.toLowerCase().trim();
+  const filtrados = clientesMaestrosGlobales.filter(c => 
+    (c.nombre && c.nombre.toLowerCase().includes(term)) || 
+    (c.codigo && c.codigo.toLowerCase().includes(term)) ||
+    (c.identificacion && c.identificacion.toLowerCase().includes(term))
+  );
+  renderizarClientesMaestrosSA(filtrados);
 });
+
+// Función que se ejecuta al darle clic al botón "ASIGNAR" de la tarjeta
+window.asignarClienteDesdeBuscador = function(codigoCliente) {
+  const usuarioDestino = document.getElementById('ac_usuario').value;
+  
+  if (!usuarioDestino) {
+    alert('⚠️ Por favor seleccione primero el USUARIO (Asesor) en la lista desplegable de arriba.');
+    document.getElementById('ac_usuario').focus();
+    return;
+  }
+
+  if (confirm(`¿Está seguro de asignar el cliente con código ${codigoCliente} al usuario ${usuarioDestino}?`)) {
+    // Si tienes función de carga, úsala. Si no, cambiamos el cursor.
+    document.body.style.cursor = 'wait';
+    
+    llamarBackend('asignarClienteDirectoAUsuario', [usuarioDestino, codigoCliente])
+      .then(response => {
+        document.body.style.cursor = 'default';
+        if (response.success) {
+          mostrarMensaje('✅ Cliente asignado correctamente a la lista del asesor', 'success', 'superAdminState');
+          document.getElementById('buscadorSAClientesMaestros').value = ''; // Limpiar
+          renderizarClientesMaestrosSA(clientesMaestrosGlobales); // Restaurar lista
+        } else {
+          mostrarMensaje('❌ Error: ' + response.mensaje, 'error', 'superAdminState');
+        }
+      }).catch(error => {
+        document.body.style.cursor = 'default';
+        mostrarMensaje('Error de conexión', 'error', 'superAdminState');
+      });
+  }
+};
     </script>
   </body>
 </html>
