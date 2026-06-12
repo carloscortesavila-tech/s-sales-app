@@ -1380,7 +1380,7 @@ background:transparent;
       <i class="fas fa-arrow-left"></i>
     </div>
     <div class="logo mini-logo">
-      <img src="https://lh3.googleusercontent.com/d/1lLqo-RkNlHAtOkEQlht6pnjpglIpaUWj" alt="Logo Mini" class="logo-image">
+      <img src="S-SALES.png" alt="S-SALES Logo" class="logo-image">
     </div>
     <h1>PANEL SUPER ADMIN</h1>
     <p>Control total del sistema S-SALES</p>
@@ -1410,80 +1410,11 @@ background:transparent;
         </button>
       </div>
 
-      <div id="panelSAAsignarAsesores" style="display: none;">
-        <div style="background: var(--bg-tint); border: 1px solid var(--border); padding: 20px; border-radius: var(--radius); margin-bottom: 20px;">
-          <h3 style="margin-bottom: 20px; color: var(--primary);"><i class="fas fa-user-shield"></i> Vincular Asesor a Supervisor</h3>
-          <form id="formVincularAsesorSup">
-            <div class="form-group" style="margin-bottom: 15px;">
-              <label>1. Seleccionar Supervisor *</label>
-              <select id="sa_select_supervisor" class="form-control" required>
-                <option value="">Cargando supervisores...</option>
-              </select>
-            </div>
-            <div class="form-group" style="margin-bottom: 15px;">
-              <label>2. Seleccionar Asesor *</label>
-              <select id="sa_select_asesor" class="form-control" required>
-                <option value="">Cargando asesores...</option>
-              </select>
-            </div>
-            <button type="submit" class="btn-primary" style="background: #2563eb; color: white; font-weight: bold; border-radius: 8px;">
-              <i class="fas fa-save"></i> GUARDAR VINCULACIÓN
-            </button>
-          </form>
-        </div>
-
-        <div class="table-container">
-          <table class="agendamientos-table" style="width: 100%;">
-            <thead>
-              <tr>
-                <th>ASESOR</th>
-                <th>SUPERVISOR ASIGNADO</th>
-                <th>ACCION</th>
-              </tr>
-            </thead>
-            <tbody id="tablaSAAsesoresRelacionBody">
-              <tr><td colspan="3" style="text-align: center;">Cargando relaciones...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div id="panelSAFormularios" style="display: none;">
-        <div style="background: var(--bg-tint); border: 1px solid var(--border); padding: 20px; border-radius: var(--radius); margin-bottom: 20px;">
-          <h3 style="margin-bottom: 15px; color: var(--primary);"><i class="fas fa-plus-square"></i> Crear Nuevo Formulario Dinámico</h3>
-          <form id="formSACrearFormulario">
-            <div class="form-group" style="margin-bottom: 15px;">
-              <label>Nombre del Formulario *</label>
-              <input type="text" id="sa_nombre_formulario" class="form-control" placeholder="Ej: Registro Control de Calidad" required>
-            </div>
-            <button type="submit" class="btn-primary" style="background: #2563eb; color: white; font-weight: bold; border-radius: 8px;">
-              <i class="fas fa-folder-plus"></i> CREAR CONFIGURACIÓN DE FORMULARIO
-            </button>
-          </form>
-        </div>
-
-        <div class="table-container">
-          <table class="agendamientos-table" style="width: 100%;">
-            <thead>
-              <tr>
-                <th>ID FORMULARIO</th>
-                <th>NOMBRE DEL MÓDULO</th>
-                <th>ESTADO</th>
-                <th>ACCIONES</th>
-              </tr>
-            </thead>
-            <tbody id="tablaSAFormulariosBody">
-              <tr><td colspan="4" style="text-align: center;">Cargando lista de formularios...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      
       <div id="panelSAUsuarios" style="display: block;">
         <div style="margin-bottom: 20px; text-align: right;">
-         <button class="btn-primary" id="btnSNCrearUsuario" style="padding: 12px 20px; width: auto; background: #2563eb; color: #ffffff; border: 2px solid #1d4ed8; font-weight: bold; border-radius: 8px;">
-  <i class="fas fa-user-plus"></i> + NUEVO USUARIO
-</button>
+          <button class="btn-primary" id="btnSNCrearUsuario" style="padding: 12px 20px; width: auto; background: #2563eb; color: #ffffff; border: 2px solid #1d4ed8; font-weight: bold; border-radius: 8px;">
+            <i class="fas fa-user-plus"></i> + NUEVO USUARIO
+          </button>
         </div>
         
         <div class="form-group" style="margin-bottom: 15px;">
@@ -1503,18 +1434,15 @@ background:transparent;
               </tr>
             </thead>
             <tbody id="tablaSAUsuariosBody">
-              <tr>
-                <td colspan="6" style="text-align: center; padding: 20px;">Cargando usuarios...</td>
-              </tr>
+              <tr><td colspan="6" style="text-align: center; padding: 20px;">Cargando usuarios...</td></tr>
             </tbody>
           </table>
         </div>
       </div>
-      
+
       <div id="panelSAClientes" style="display: none;">
         <div style="background: var(--bg-tint); border: 1px solid var(--border); padding: 20px; border-radius: var(--radius);">
           <h3 style="margin-bottom: 20px; color: var(--primary);"><i class="fas fa-plus-circle"></i> Nuevo Cliente en Base Maestra</h3>
-          
           <form id="formCrearClienteMaestro">
             <div class="action-grid two-columns" style="margin-top: 0;">
               <div class="form-group"><label>Usuario Cliente *</label><input type="text" id="cc_usuario" class="form-control" required></div>
@@ -1540,14 +1468,10 @@ background:transparent;
       <div id="panelSAAsignar" style="display: none;">
         <div style="background: var(--bg-tint); border: 1px solid var(--border); padding: 20px; border-radius: var(--radius);">
           <h3 style="margin-bottom: 20px; color: var(--primary);"><i class="fas fa-handshake"></i> Asignar Cliente a Usuario</h3>
-          
           <div class="form-group" style="margin-bottom: 20px;">
             <label style="font-weight: bold; color: var(--primary);">1. Seleccionar Usuario (Destino) *</label>
-            <select id="ac_usuario" class="form-control" style="border: 2px solid var(--accent);">
-              <option value="">Cargando usuarios...</option>
-            </select>
+            <select id="ac_usuario" class="form-control" style="border: 2px solid var(--accent);"></select>
           </div>
-          
           <div class="form-group" style="margin-bottom: 15px;">
             <label style="font-weight: bold; color: var(--primary);">2. Buscar Cliente en Base Maestra *</label>
             <div style="position: relative;">
@@ -1555,15 +1479,79 @@ background:transparent;
               <input type="text" id="buscadorSAClientesMaestros" class="form-control" placeholder="Buscar por código, nombre o NIT..." style="padding-left: 45px;">
             </div>
           </div>
-          
-          <div id="listaSAClientesMaestros" style="max-height: 400px; overflow-y: auto; background: white; border: 1px solid var(--border); border-radius: 12px; padding: 10px;">
-            <div style="text-align: center; padding: 30px; color: var(--gray);">
-              <i class="fas fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 10px;"></i><br>
-              Cargando clientes de la base maestra...
-            </div>
-          </div>
+          <div id="listaSAClientesMaestros" style="max-height: 400px; overflow-y: auto; background: white; border: 1px solid var(--border); border-radius: 12px; padding: 10px;"></div>
         </div>
       </div>
+
+      <div id="panelSAAsignarAsesores" style="display: none;">
+        <div style="background: var(--bg-tint); border: 1px solid var(--border); padding: 20px; border-radius: var(--radius); margin-bottom: 20px;">
+          <h3 style="margin-bottom: 20px; color: var(--primary);"><i class="fas fa-user-shield"></i> Asignación de Asesores a Supervisor</h3>
+          <form id="formVincularAsesorSup">
+            <div class="action-grid two-columns" style="margin-top: 0;">
+              <div class="form-group">
+                <label>Seleccionar Supervisor *</label>
+                <select id="sa_select_supervisor" class="form-control" required></select>
+              </div>
+              <div class="form-group">
+                <label>Seleccionar Asesor *</label>
+                <select id="sa_select_asesor" class="form-control" required></select>
+              </div>
+            </div>
+            <div style="text-align: right; margin-top: 15px;">
+              <button type="submit" class="btn-primary" style="padding: 12px 24px; width: auto; background: #2563eb; color: #ffffff; border: 2px solid #1d4ed8; font-weight: bold; border-radius: 8px;">
+                <i class="fas fa-link"></i> ASIGNAR ASESOR
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div class="table-container">
+          <table class="agendamientos-table" style="min-width: 600px;">
+            <thead>
+              <tr>
+                <th>ASESOR</th>
+                <th>SUPERVISOR ASIGNADO</th>
+                <th>ACCIONES</th>
+              </tr>
+            </thead>
+            <tbody id="tablaSAAsesoresRelacionBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="panelSAFormularios" style="display: none;">
+        <div style="background: var(--bg-tint); border: 1px solid var(--border); padding: 20px; border-radius: var(--radius); margin-bottom: 20px;">
+          <h3 style="margin-bottom: 15px; color: var(--primary);"><i class="fas fa-plus-square"></i> Crear Nuevo Formulario</h3>
+          <form id="formSACrearFormulario">
+            <div class="form-group">
+              <label>Nombre del Formulario *</label>
+              <input type="text" id="sa_nombre_formulario" class="form-control" placeholder="Escriba el nombre del nuevo formulario..." required>
+            </div>
+            <div style="text-align: right; margin-top: 15px;">
+              <button type="submit" class="btn-primary" style="padding: 12px 24px; width: auto; background: #2563eb; color: #ffffff; border: 2px solid #1d4ed8; font-weight: bold; border-radius: 8px;">
+                <i class="fas fa-plus-circle"></i> CREAR FORMULARIO
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div class="table-container">
+          <table class="agendamientos-table" style="min-width: 600px;">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>NOMBRE DEL FORMULARIO</th>
+                <th>ESTADO</th>
+                <th>ACCIONES</th>
+              </tr>
+            </thead>
+            <tbody id="tablaSAFormulariosBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
   
   <div class="state-footer">
     © 2026 S-SALES • Panel de Super Admin
@@ -11086,7 +11074,7 @@ window.iniciarVisitaDesdeSA = function(usuarioAsesor, codigoCliente, fecha, hora
   }
 };
 
-      // =====================================================================
+// =====================================================================
 // ====== FUNCIONES EXCLUSIVAS: ASIGNAR ASESORES & FORMULARIOS =========
 // =====================================================================
 
@@ -11096,11 +11084,12 @@ function cargarModuloAsignarAsesoresSA() {
   const selAse = document.getElementById('sa_select_asesor');
   const tbody = document.getElementById('tablaSAAsesoresRelacionBody');
   
-  selSup.innerHTML = '<option value="">Cargando...</option>';
-  selAse.innerHTML = '<option value="">Cargando...</option>';
-  tbody.innerHTML = '<tr><td colspan="3" style="text-align: center;"><i class="fas fa-spinner fa-spin"></i> Sincronizando...</td></tr>';
+  if(!selSup || !selAse || !tbody) return;
+  
+  selSup.innerHTML = '<option value="">Cargando supervisores...</option>';
+  selAse.innerHTML = '<option value="">Cargando asesores...</option>';
+  tbody.innerHTML = '<tr><td colspan="3" style="text-align: center;"><i class="fas fa-spinner fa-spin"></i> Sincronizando datos...</td></tr>';
 
-  // Usamos la lista global de usuarios que ya cargó el SuperAdmin para rellenar los selectores rápidamente
   if (usuariosGlobalesSA && usuariosGlobalesSA.length > 0) {
     let optSup = '<option value="">-- Seleccione Supervisor --</option>';
     let optAse = '<option value="">-- Seleccione Asesor --</option>';
@@ -11113,22 +11102,21 @@ function cargarModuloAsignarAsesoresSA() {
     selSup.innerHTML = optSup;
     selAse.innerHTML = optAse;
     
-    // Renderizar la tabla de relaciones actuales basándonos en la columna de supervisor de cada asesor
     let htmlTabla = '';
     usuariosGlobalesSA.filter(u => u.rol.toUpperCase() === 'ASESOR').forEach(ase => {
       htmlTabla += `
         <tr>
           <td><strong>${ase.nombre}</strong> (${ase.usuario})</td>
-          <td>${ase.supervisor ? `<i class="fas fa-user-tie"></i> ${ase.supervisor}` : '<span style="color:orange;">Sin asignar</span>'}</td>
+          <td>${ase.supervisor ? `<i class="fas fa-user-tie"></i> ${ase.supervisor}` : '<span class="estado-badge estado-cancelado" style="background: rgba(245,158,11,0.1); color:#f59e0b; padding:4px 8px;">Sin Supervisor</span>'}</td>
           <td>
-            <button onclick="quitarSupervisorAsesorSA('${ase.usuario}')" class="btn-primary" style="padding:4px 10px; font-size:11px; background:#dc3545; width:auto; border-radius:4px;" ${!ase.supervisor ? 'disabled' : ''}>
-              Quitar
+            <button onclick="quitarSupervisorAsesorSA('${ase.usuario}')" class="btn-primary" style="padding: 6px 12px; font-size: 12px; background: #dc3545; color: white; border: none; width: auto; border-radius: 6px; font-weight: bold;" ${!ase.supervisor ? 'disabled style="background:#cbd5e1; cursor:not-allowed;"' : ''}>
+              <i class="fas fa-user-minus"></i> Quitar
             </button>
           </td>
         </tr>
       `;
     });
-    tbody.innerHTML = htmlTabla || '<tr><td colspan="3" style="text-align:center;">No hay asesores creados.</td></tr>';
+    tbody.innerHTML = htmlTabla || '<tr><td colspan="3" style="text-align:center;">No se encontraron asesores registrados.</td></tr>';
   }
 }
 
@@ -11142,21 +11130,20 @@ document.getElementById('formVincularAsesorSup')?.addEventListener('submit', fun
     .then(res => {
       document.body.style.cursor = 'default';
       if(res.success) {
-        mostrarMensaje('✅ Vinculación guardada con éxito', 'success', 'superAdminState');
-        // Actualizar la lista interna y refrescar la tabla
+        mostrarMensaje('✓ Asesor asignado correctamente', 'success', 'superAdminState');
         llamarBackend('obtenerTodosLosUsuarios', []).then(r => { if(r.success) { usuariosGlobalesSA = r.usuarios; cargarModuloAsignarAsesoresSA(); } });
       } else { alert('Error: ' + res.mensaje); }
     });
 });
 
 window.quitarSupervisorAsesorSA = function(usuarioAsesor) {
-  if(confirm('¿Desea desvincular a este asesor de su supervisor actual?')) {
+  if(confirm('¿Está seguro de remover la asignación de supervisor para este asesor?')) {
     document.body.style.cursor = 'wait';
-    llamarBackend('vincularAsesorASupervisorSA', [usuarioAsesor, '']) // Vacío desvincula
+    llamarBackend('vincularAsesorASupervisorSA', [usuarioAsesor, '']) 
       .then(res => {
         document.body.style.cursor = 'default';
         if(res.success) {
-          mostrarMensaje('✅ Supervisor removido', 'success', 'superAdminState');
+          mostrarMensaje('✓ Supervisor removido con éxito', 'success', 'superAdminState');
           llamarBackend('obtenerTodosLosUsuarios', []).then(r => { if(r.success) { usuariosGlobalesSA = r.usuarios; cargarModuloAsignarAsesoresSA(); } });
         }
       });
@@ -11166,7 +11153,8 @@ window.quitarSupervisorAsesorSA = function(usuarioAsesor) {
 // --- CONTROLADOR: FORMULARIOS ---
 function cargarModuloFormulariosSA() {
   const tbody = document.getElementById('tablaSAFormulariosBody');
-  tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;"><i class="fas fa-spinner fa-spin"></i> Consultando formularios_config...</td></tr>';
+  if(!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;"><i class="fas fa-spinner fa-spin"></i> Cargando configuración de formularios...</td></tr>';
 
   llamarBackend('obtenerListaFormulariosCompletaSA', [])
     .then(res => {
@@ -11178,16 +11166,16 @@ function cargarModuloFormulariosSA() {
             <tr>
               <td><code>${f.id}</code></td>
               <td><strong>${f.nombre}</strong></td>
-              <td><span class="estado-badge ${estaActivo ? 'estado-completado' : 'estado-cancelado'}">${estaActivo ? 'Activo' : 'Inactivo'}</span></td>
+              <td><span class="estado-badge ${estaActivo ? 'estado-completado' : 'estado-cancelado'}">${estaActivo ? 'ACTIVO' : 'INACTIVO'}</span></td>
               <td>
-                <button onclick="cambiarEstadoFormularioSA('${f.id}', '${estaActivo ? 'INACTIVO' : 'ACTIVO'}')" class="btn-primary" style="padding:5px 12px; width:auto; font-size:12px; background: ${estaActivo ? '#be123c' : '#059669'}; border-radius:6px;">
-                  ${estaActivo ? 'Desactivar' : 'Activar'}
+                <button onclick="cambiarEstadoFormularioSA('${f.id}', '${estaActivo ? 'INACTIVO' : 'ACTIVO'}')" class="btn-primary" style="padding: 6px 12px; width: auto; font-size: 12px; background: ${estaActivo ? '#dc3545' : '#10b981'}; color: white; border: none; border-radius: 6px; font-weight: bold;">
+                  <i class="fas ${estaActivo ? 'fa-toggle-on' : 'fa-toggle-off'}"></i> ${estaActivo ? 'Desactivar' : 'Activar'}
                 </button>
               </td>
             </tr>
           `;
         });
-        tbody.innerHTML = html || '<tr><td colspan="4" style="text-align:center;">No hay formularios en la hoja de configuración.</td></tr>';
+        tbody.innerHTML = html || '<tr><td colspan="4" style="text-align:center;">No hay formularios configurados.</td></tr>';
       } else { tbody.innerHTML = `<tr><td colspan="4" style="color:red; text-align:center;">${res.mensaje}</td></tr>`; }
     });
 }
@@ -11201,7 +11189,7 @@ document.getElementById('formSACrearFormulario')?.addEventListener('submit', fun
     .then(res => {
       document.body.style.cursor = 'default';
       if(res.success) {
-        mostrarMensaje('✅ Nuevo formulario estructurado', 'success', 'superAdminState');
+        mostrarMensaje('✓ Formulario creado exitosamente', 'success', 'superAdminState');
         document.getElementById('sa_nombre_formulario').value = '';
         cargarModuloFormulariosSA();
       } else { alert('Error: ' + res.mensaje); }
@@ -11214,11 +11202,11 @@ window.cambiarEstadoFormularioSA = function(idFormulario, nuevoEstado) {
     .then(res => {
       document.body.style.cursor = 'default';
       if(res.success) {
-        mostrarMensaje('✅ Estado de formulario actualizado', 'success', 'superAdminState');
+        mostrarMensaje('✓ Estado del formulario modificado', 'success', 'superAdminState');
         cargarModuloFormulariosSA();
       }
     });
 };
-    </script>
-  </body>
+</script>
+</body>
 </html>
