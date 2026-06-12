@@ -1406,9 +1406,9 @@ background:transparent;
       
       <div id="panelSAUsuarios" style="display: block;">
         <div style="margin-bottom: 20px; text-align: right;">
-          <button class="btn-primary" id="btnSNCrearUsuario" style="padding: 12px 20px; width: auto; background: var(--success);">
-            <i class="fas fa-user-plus"></i> + NUEVO USUARIO
-          </button>
+         <button class="btn-primary" id="btnSNCrearUsuario" style="padding: 12px 20px; width: auto; background: #2563eb; color: #ffffff; border: 2px solid #1d4ed8; font-weight: bold; border-radius: 8px;">
+  <i class="fas fa-user-plus"></i> + NUEVO USUARIO
+</button>
         </div>
         
         <div class="form-group" style="margin-bottom: 15px;">
@@ -10914,9 +10914,9 @@ function renderizarClientesMaestrosSA(clientes) {
             <strong>Cód:</strong> ${c.codigo} | <strong>ID:</strong> ${c.identificacion || 'N/A'} | <strong>📍</strong> ${c.ciudad || 'N/A'}
           </p>
         </div>
-        <button onclick="asignarClienteDesdeBuscador('${c.codigo}')" class="btn-primary" style="padding: 8px 15px; width: auto; font-size: 12px; background: var(--success); border-radius: 20px;">
-          <i class="fas fa-link"></i> ASIGNAR
-        </button>
+        <button onclick="asignarClienteDesdeBuscador('${c.codigo}')" class="btn-primary" style="padding: 8px 15px; width: auto; font-size: 12px; background: #2563eb; color: #ffffff; border: 2px solid #1d4ed8; border-radius: 20px; font-weight: bold;">
+  <i class="fas fa-link"></i> ASIGNAR
+</button>
       </div>
     `;
   });
