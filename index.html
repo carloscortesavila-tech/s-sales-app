@@ -2586,9 +2586,10 @@ function cargarAsesoresParaSupervisor() {
   
   const rolUsuario = String(userData.rol).toUpperCase().trim();
   
-  if (rolUsuario === 'ADMIN' || rolUsuario === 'SUPERVISOR') {
+  // 🔥 CORRECCIÓN: Permitir que SUPERADMIN entre a este bloque de carga total
+  if (rolUsuario === 'ADMIN' || rolUsuario === 'SUPERVISOR' || rolUsuario === 'SUPERADMIN') {
     
-    if (rolUsuario === 'ADMIN') {
+    if (rolUsuario === 'ADMIN' || rolUsuario === 'SUPERADMIN') {
       llamarBackend('obtenerTodosLosAsesores', [])
         .then(function(response) {
           if (response.success && response.asesores) {
@@ -2605,7 +2606,7 @@ function cargarAsesoresParaSupervisor() {
         }).catch(e => console.warn('Aviso: ', e));
     } 
     else {
-      // SUPERVISOR
+      // SUPERVISOR PROPIO
       llamarBackend('obtenerAsesoresPorSupervisor', [userData.usuario])
         .then(function(response) {
           if (response.success && response.asesores && response.asesores.length > 0) {
@@ -2618,15 +2619,7 @@ function cargarAsesoresParaSupervisor() {
               const el = document.getElementById(id);
               if(el) { el.innerHTML = options; el.disabled = false; }
             });
-            
-            const btnFiltrar = document.getElementById('btnFiltrarSupervision');
-            if (btnFiltrar) {
-              btnFiltrar.disabled = false;
-              btnFiltrar.style.opacity = '1';
-              btnFiltrar.style.cursor = 'pointer';
-            }
           } else {
-            // Bloquea los selectores si la lista está vacía
             ['filtroAsesor', 'filtroAsesorAccesos', 'filtroAsesorAgendamientos'].forEach(id => {
               const el = document.getElementById(id);
               if(el) { el.innerHTML = '<option value="">No tienes asesores asignados</option>'; el.disabled = true; }
@@ -10594,8 +10587,9 @@ function mostrarAgendamientosSupervision(registros) {
   
   let html = '<div style="display: flex; flex-direction: column; gap: 12px;">';
   
+  const esSuperAdmin = userData && String(userData.rol).toUpperCase().trim() === 'SUPERADMIN';
+  
   registros.forEach(function(item, index) {
-    // Lectura de los campos respetando la estructura de tu base de datos maestro
     let usuario = item['USUARIO'] || item['usuario'] || 'Desconocido';
     let codigo = item['CODIGO'] || item['codigo'] || 'N/A';
     let nombre = item['NOMBRE'] || item['nombre'] || 'Sin nombre';
@@ -10603,13 +10597,33 @@ function mostrarAgendamientosSupervision(registros) {
     let hora = item['HORA AGENDADA'] || item['hora'] || '';
     let estado = String(item['ESTADO'] || item['estado'] || 'PENDIENTE').toUpperCase();
     let observacion = item['OBSERVACION'] || item['observacion'] || '';
+    let visitaIniciada = String(item['VISITA_INICIADA'] || 'NO').toUpperCase();
     
-    // Asignación dinámica de colores para los estados
     let estiloBadge = 'background: rgba(107, 114, 128, 0.1); color: var(--gray);';
     if (estado === 'PENDIENTE') estiloBadge = 'background: rgba(245, 158, 11, 0.1); color: #f59e0b;';
     if (estado === 'CUMPLIDO' || estado === 'COMPLETADO') estiloBadge = 'background: rgba(16, 185, 129, 0.1); color: #10b981;';
     if (estado === 'ENCURSO') estiloBadge = 'background: rgba(37, 99, 235, 0.1); color: var(--primary-light);';
     if (estado === 'CANCELADO' || estado === 'NO CUMPLIDO') estiloBadge = 'background: rgba(239, 68, 68, 0.1); color: #ef4444;';
+    
+    // Controles exclusivos para SuperAdmin
+    let controlesSA = '';
+    if (esSuperAdmin) {
+      controlesSA = `
+        <div style="margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--gray-light); display: flex; gap: 10px; align-items: center; justify-content: flex-end; flex-wrap: wrap;">
+          <small style="color: var(--gray); font-weight: bold;">⚡ Cambiar Estado:</small>
+          <select onchange="cambiarEstadoAgendamientoSA('${usuario}', '${codigo}', '${fecha}', '${hora}', this.value)" style="padding: 6px 10px; font-size: 0.8rem; border-radius: 8px; border: 2px solid var(--accent); background: white; cursor: pointer;">
+            <option value="PENDIENTE" ${estado === 'PENDIENTE' ? 'selected' : ''}>PENDIENTE</option>
+            <option value="CUMPLIDO" ${estado === 'CUMPLIDO' || estado === 'COMPLETADO' ? 'selected' : ''}>CUMPLIDO</option>
+          </select>
+          
+          ${visitaIniciada !== 'SI' ? `
+            <button onclick="iniciarVisitaDesdeSA('${usuario}', '${codigo}', '${fecha}', '${hora}')" class="btn-primary" style="padding: 6px 12px; width: auto; font-size: 0.8rem; background: #28a745; border-radius: 8px;">
+              <i class="fas fa-play"></i> Iniciar Visita (SI)
+            </button>
+          ` : '<small style="color: #10b981; font-weight: bold; background: rgba(16,185,129,0.1); padding: 4px 8px; border-radius: 6px;">🟢 Visita Iniciada</small>'}
+        </div>
+      `;
+    }
     
     html += `
       <div class="client-card" style="cursor: default; margin-bottom: 0; padding: 15px;">
@@ -10628,14 +10642,11 @@ function mostrarAgendamientosSupervision(registros) {
           </div>
           <div style="text-align: right; flex-shrink: 0;">
             <span class="estado-badge" style="${estiloBadge} padding: 4px 10px; border-radius: 30px; font-size: 0.75rem; font-weight: 600;">${estado}</span>
-            <p style="margin: 8px 0 0 0; color: var(--gray-dark); font-size: 0.85rem; font-weight: 600;">
-              📅 ${fecha}
-            </p>
-            <p style="margin: 2px 0 0 0; color: var(--gray); font-size: 0.8rem;">
-              🕒 ${hora}
-            </p>
+            <p style="margin: 8px 0 0 0; color: var(--gray-dark); font-size: 0.85rem; font-weight: 600;">📅 ${fecha}</p>
+            <p style="margin: 2px 0 0 0; color: var(--gray); font-size: 0.8rem;">🕒 ${hora}</p>
           </div>
         </div>
+        ${controlesSA}
       </div>
     `;
   });
@@ -10957,6 +10968,37 @@ window.asignarClienteDesdeBuscador = function(codigoCliente) {
         document.body.style.cursor = 'default';
         mostrarMensaje('Error de conexión', 'error', 'superAdminState');
       });
+  }
+};
+
+      // Funciones ejecutoras del SuperAdmin en la pestaña Supervisión
+window.cambiarEstadoAgendamientoSA = function(usuarioAsesor, codigoCliente, fecha, hora, nuevoEstado) {
+  document.body.style.cursor = 'wait';
+  llamarBackend('actualizarEstadoAgendamientoDesdeSA', [usuarioAsesor, codigoCliente, fecha, hora, nuevoEstado])
+    .then(response => {
+      document.body.style.cursor = 'default';
+      if (response.success) {
+        mostrarMensaje('✅ Estado de agendamiento actualizado', 'success', 'supervisionState');
+        cargarDatosAgendamientos(); // Recargar la lista en tiempo real
+      } else {
+        alert('Error: ' + response.mensaje);
+      }
+    }).catch(() => { document.body.style.cursor = 'default'; alert('Error de conexión'); });
+};
+
+window.iniciarVisitaDesdeSA = function(usuarioAsesor, codigoCliente, fecha, hora) {
+  if (confirm(`¿Marcar la visita como INICIADA (SI) para el asesor ${usuarioAsesor}?`)) {
+    document.body.style.cursor = 'wait';
+    llamarBackend('iniciarVisitaDesdeSA', [usuarioAsesor, codigoCliente, fecha, hora])
+      .then(response => {
+        document.body.style.cursor = 'default';
+        if (response.success) {
+          mostrarMensaje('✅ Visita forzada a SI correctamente', 'success', 'supervisionState');
+          cargarDatosAgendamientos(); // Recargar lista
+        } else {
+          alert('Error: ' + response.mensaje);
+        }
+      }).catch(() => { document.body.style.cursor = 'default'; alert('Error de conexión'); });
   }
 };
     </script>
