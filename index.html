@@ -1393,7 +1393,7 @@ background:transparent;
       </div>
       
       <div style="display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 2px solid var(--gray-light); overflow-x: auto; padding-bottom: 5px;">
-        <button id="tabSAUsuarios" class="btn-primary" style="flex: 1; min-width: 150px; background: var(--primary);">
+        <button id="tabSAUsuarios" class="btn-primary" style="flex: 1; min-width: 130px; background: var(--primary);">
           <i class="fas fa-users-cog"></i> USUARIOS
         </button>
         <button id="tabSAClientes" class="btn-primary" style="flex: 1; min-width: 150px; background: var(--gray);">
@@ -1402,6 +1402,81 @@ background:transparent;
         <button id="tabSAAsignar" class="btn-primary" style="flex: 1; min-width: 150px; background: var(--gray);">
           <i class="fas fa-link"></i> ASIGNAR CLIENTE
         </button>
+        <button id="tabSAAsignarAsesores" class="btn-primary" style="flex: 1; min-width: 180px; background: var(--gray);">
+          <i class="fas fa-user-friends"></i> ASIGNAR ASESORES
+        </button>
+        <button id="tabSAFormularios" class="btn-primary" style="flex: 1; min-width: 150px; background: var(--gray);">
+          <i class="fas fa-wpforms"></i> FORMULARIOS
+        </button>
+      </div>
+
+      <div id="panelSAAsignarAsesores" style="display: none;">
+        <div style="background: var(--bg-tint); border: 1px solid var(--border); padding: 20px; border-radius: var(--radius); margin-bottom: 20px;">
+          <h3 style="margin-bottom: 20px; color: var(--primary);"><i class="fas fa-user-shield"></i> Vincular Asesor a Supervisor</h3>
+          <form id="formVincularAsesorSup">
+            <div class="form-group" style="margin-bottom: 15px;">
+              <label>1. Seleccionar Supervisor *</label>
+              <select id="sa_select_supervisor" class="form-control" required>
+                <option value="">Cargando supervisores...</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 15px;">
+              <label>2. Seleccionar Asesor *</label>
+              <select id="sa_select_asesor" class="form-control" required>
+                <option value="">Cargando asesores...</option>
+              </select>
+            </div>
+            <button type="submit" class="btn-primary" style="background: #2563eb; color: white; font-weight: bold; border-radius: 8px;">
+              <i class="fas fa-save"></i> GUARDAR VINCULACIÓN
+            </button>
+          </form>
+        </div>
+
+        <div class="table-container">
+          <table class="agendamientos-table" style="width: 100%;">
+            <thead>
+              <tr>
+                <th>ASESOR</th>
+                <th>SUPERVISOR ASIGNADO</th>
+                <th>ACCION</th>
+              </tr>
+            </thead>
+            <tbody id="tablaSAAsesoresRelacionBody">
+              <tr><td colspan="3" style="text-align: center;">Cargando relaciones...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="panelSAFormularios" style="display: none;">
+        <div style="background: var(--bg-tint); border: 1px solid var(--border); padding: 20px; border-radius: var(--radius); margin-bottom: 20px;">
+          <h3 style="margin-bottom: 15px; color: var(--primary);"><i class="fas fa-plus-square"></i> Crear Nuevo Formulario Dinámico</h3>
+          <form id="formSACrearFormulario">
+            <div class="form-group" style="margin-bottom: 15px;">
+              <label>Nombre del Formulario *</label>
+              <input type="text" id="sa_nombre_formulario" class="form-control" placeholder="Ej: Registro Control de Calidad" required>
+            </div>
+            <button type="submit" class="btn-primary" style="background: #2563eb; color: white; font-weight: bold; border-radius: 8px;">
+              <i class="fas fa-folder-plus"></i> CREAR CONFIGURACIÓN DE FORMULARIO
+            </button>
+          </form>
+        </div>
+
+        <div class="table-container">
+          <table class="agendamientos-table" style="width: 100%;">
+            <thead>
+              <tr>
+                <th>ID FORMULARIO</th>
+                <th>NOMBRE DEL MÓDULO</th>
+                <th>ESTADO</th>
+                <th>ACCIONES</th>
+              </tr>
+            </thead>
+            <tbody id="tablaSAFormulariosBody">
+              <tr><td colspan="4" style="text-align: center;">Cargando lista de formularios...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
       
       <div id="panelSAUsuarios" style="display: block;">
@@ -10660,33 +10735,42 @@ function mostrarAgendamientosSupervision(registros) {
 
 // Gestión de Pestañas
 function iniciarTabsSuperAdmin() {
-  document.getElementById('tabSAUsuarios').addEventListener('click', function() {
-    document.getElementById('panelSAUsuarios').style.display = 'block';
-    document.getElementById('panelSAClientes').style.display = 'none';
-    document.getElementById('panelSAAsignar').style.display = 'none';
-    this.style.background = 'var(--primary)';
-    document.getElementById('tabSAClientes').style.background = 'var(--gray)';
-    document.getElementById('tabSAAsignar').style.background = 'var(--gray)';
+  const tabs = ['tabSAUsuarios', 'tabSAClientes', 'tabSAAsignar', 'tabSAAsignarAsesores', 'tabSAFormularios'];
+  const paneles = ['panelSAUsuarios', 'panelSAClientes', 'panelSAAsignar', 'panelSAAsignarAsesores', 'panelSAFormularios'];
+
+  function alternarPanel(tabActiva, panelActivo) {
+    tabs.forEach(t => {
+      const el = document.getElementById(t);
+      if(el) el.style.background = (t === tabActiva) ? 'var(--primary)' : 'var(--gray)';
+    });
+    paneles.forEach(p => {
+      const el = document.getElementById(p);
+      if(el) el.style.display = (p === panelActivo) ? 'block' : 'none';
+    });
+  }
+
+  document.getElementById('tabSAUsuarios')?.addEventListener('click', function() {
+    alternarPanel('tabSAUsuarios', 'panelSAUsuarios');
     cargarUsuariosSuperAdmin();
   });
 
-  document.getElementById('tabSAClientes').addEventListener('click', function() {
-    document.getElementById('panelSAUsuarios').style.display = 'none';
-    document.getElementById('panelSAClientes').style.display = 'block';
-    document.getElementById('panelSAAsignar').style.display = 'none';
-    this.style.background = 'var(--primary)';
-    document.getElementById('tabSAUsuarios').style.background = 'var(--gray)';
-    document.getElementById('tabSAAsignar').style.background = 'var(--gray)';
+  document.getElementById('tabSAClientes')?.addEventListener('click', function() {
+    alternarPanel('tabSAClientes', 'panelSAClientes');
   });
 
-  document.getElementById('tabSAAsignar').addEventListener('click', function() {
-    document.getElementById('panelSAUsuarios').style.display = 'none';
-    document.getElementById('panelSAClientes').style.display = 'none';
-    document.getElementById('panelSAAsignar').style.display = 'block';
-    this.style.background = 'var(--primary)';
-    document.getElementById('tabSAUsuarios').style.background = 'var(--gray)';
-    document.getElementById('tabSAClientes').style.background = 'var(--gray)';
+  document.getElementById('tabSAAsignar')?.addEventListener('click', function() {
+    alternarPanel('tabSAAsignar', 'panelSAAsignar');
     cargarSelectoresAsignacion();
+  });
+
+  document.getElementById('tabSAAsignarAsesores')?.addEventListener('click', function() {
+    alternarPanel('tabSAAsignarAsesores', 'panelSAAsignarAsesores');
+    cargarModuloAsignarAsesoresSA();
+  });
+
+  document.getElementById('tabSAFormularios')?.addEventListener('click', function() {
+    alternarPanel('tabSAFormularios', 'panelSAFormularios');
+    cargarModuloFormulariosSA();
   });
 }
 
@@ -11000,6 +11084,140 @@ window.iniciarVisitaDesdeSA = function(usuarioAsesor, codigoCliente, fecha, hora
         }
       }).catch(() => { document.body.style.cursor = 'default'; alert('Error de conexión'); });
   }
+};
+
+      // =====================================================================
+// ====== FUNCIONES EXCLUSIVAS: ASIGNAR ASESORES & FORMULARIOS =========
+// =====================================================================
+
+// --- CONTROLADOR: ASIGNAR ASESORES ---
+function cargarModuloAsignarAsesoresSA() {
+  const selSup = document.getElementById('sa_select_supervisor');
+  const selAse = document.getElementById('sa_select_asesor');
+  const tbody = document.getElementById('tablaSAAsesoresRelacionBody');
+  
+  selSup.innerHTML = '<option value="">Cargando...</option>';
+  selAse.innerHTML = '<option value="">Cargando...</option>';
+  tbody.innerHTML = '<tr><td colspan="3" style="text-align: center;"><i class="fas fa-spinner fa-spin"></i> Sincronizando...</td></tr>';
+
+  // Usamos la lista global de usuarios que ya cargó el SuperAdmin para rellenar los selectores rápidamente
+  if (usuariosGlobalesSA && usuariosGlobalesSA.length > 0) {
+    let optSup = '<option value="">-- Seleccione Supervisor --</option>';
+    let optAse = '<option value="">-- Seleccione Asesor --</option>';
+    
+    usuariosGlobalesSA.forEach(u => {
+      if(u.rol.toUpperCase() === 'SUPERVISOR') optSup += `<option value="${u.usuario}">${u.nombre}</option>`;
+      if(u.rol.toUpperCase() === 'ASESOR') optAse += `<option value="${u.usuario}">${u.nombre}</option>`;
+    });
+    
+    selSup.innerHTML = optSup;
+    selAse.innerHTML = optAse;
+    
+    // Renderizar la tabla de relaciones actuales basándonos en la columna de supervisor de cada asesor
+    let htmlTabla = '';
+    usuariosGlobalesSA.filter(u => u.rol.toUpperCase() === 'ASESOR').forEach(ase => {
+      htmlTabla += `
+        <tr>
+          <td><strong>${ase.nombre}</strong> (${ase.usuario})</td>
+          <td>${ase.supervisor ? `<i class="fas fa-user-tie"></i> ${ase.supervisor}` : '<span style="color:orange;">Sin asignar</span>'}</td>
+          <td>
+            <button onclick="quitarSupervisorAsesorSA('${ase.usuario}')" class="btn-primary" style="padding:4px 10px; font-size:11px; background:#dc3545; width:auto; border-radius:4px;" ${!ase.supervisor ? 'disabled' : ''}>
+              Quitar
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+    tbody.innerHTML = htmlTabla || '<tr><td colspan="3" style="text-align:center;">No hay asesores creados.</td></tr>';
+  }
+}
+
+document.getElementById('formVincularAsesorSup')?.addEventListener('submit', function(e) {
+  e.preventDefault();
+  const supervisor = document.getElementById('sa_select_supervisor').value;
+  const asesor = document.getElementById('sa_select_asesor').value;
+  
+  document.body.style.cursor = 'wait';
+  llamarBackend('vincularAsesorASupervisorSA', [asesor, supervisor])
+    .then(res => {
+      document.body.style.cursor = 'default';
+      if(res.success) {
+        mostrarMensaje('✅ Vinculación guardada con éxito', 'success', 'superAdminState');
+        // Actualizar la lista interna y refrescar la tabla
+        llamarBackend('obtenerTodosLosUsuarios', []).then(r => { if(r.success) { usuariosGlobalesSA = r.usuarios; cargarModuloAsignarAsesoresSA(); } });
+      } else { alert('Error: ' + res.mensaje); }
+    });
+});
+
+window.quitarSupervisorAsesorSA = function(usuarioAsesor) {
+  if(confirm('¿Desea desvincular a este asesor de su supervisor actual?')) {
+    document.body.style.cursor = 'wait';
+    llamarBackend('vincularAsesorASupervisorSA', [usuarioAsesor, '']) // Vacío desvincula
+      .then(res => {
+        document.body.style.cursor = 'default';
+        if(res.success) {
+          mostrarMensaje('✅ Supervisor removido', 'success', 'superAdminState');
+          llamarBackend('obtenerTodosLosUsuarios', []).then(r => { if(r.success) { usuariosGlobalesSA = r.usuarios; cargarModuloAsignarAsesoresSA(); } });
+        }
+      });
+  }
+};
+
+// --- CONTROLADOR: FORMULARIOS ---
+function cargarModuloFormulariosSA() {
+  const tbody = document.getElementById('tablaSAFormulariosBody');
+  tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;"><i class="fas fa-spinner fa-spin"></i> Consultando formularios_config...</td></tr>';
+
+  llamarBackend('obtenerListaFormulariosCompletaSA', [])
+    .then(res => {
+      if(res.success) {
+        let html = '';
+        res.formularios.forEach(f => {
+          const estaActivo = String(f.estado).toUpperCase() === 'ACTIVO' || f.estado === true;
+          html += `
+            <tr>
+              <td><code>${f.id}</code></td>
+              <td><strong>${f.nombre}</strong></td>
+              <td><span class="estado-badge ${estaActivo ? 'estado-completado' : 'estado-cancelado'}">${estaActivo ? 'Activo' : 'Inactivo'}</span></td>
+              <td>
+                <button onclick="cambiarEstadoFormularioSA('${f.id}', '${estaActivo ? 'INACTIVO' : 'ACTIVO'}')" class="btn-primary" style="padding:5px 12px; width:auto; font-size:12px; background: ${estaActivo ? '#be123c' : '#059669'}; border-radius:6px;">
+                  ${estaActivo ? 'Desactivar' : 'Activar'}
+                </button>
+              </td>
+            </tr>
+          `;
+        });
+        tbody.innerHTML = html || '<tr><td colspan="4" style="text-align:center;">No hay formularios en la hoja de configuración.</td></tr>';
+      } else { tbody.innerHTML = `<tr><td colspan="4" style="color:red; text-align:center;">${res.mensaje}</td></tr>`; }
+    });
+}
+
+document.getElementById('formSACrearFormulario')?.addEventListener('submit', function(e) {
+  e.preventDefault();
+  const nombreForm = document.getElementById('sa_nombre_formulario').value;
+  
+  document.body.style.cursor = 'wait';
+  llamarBackend('crearNuevoFormularioConfigSA', [nombreForm])
+    .then(res => {
+      document.body.style.cursor = 'default';
+      if(res.success) {
+        mostrarMensaje('✅ Nuevo formulario estructurado', 'success', 'superAdminState');
+        document.getElementById('sa_nombre_formulario').value = '';
+        cargarModuloFormulariosSA();
+      } else { alert('Error: ' + res.mensaje); }
+    });
+});
+
+window.cambiarEstadoFormularioSA = function(idFormulario, nuevoEstado) {
+  document.body.style.cursor = 'wait';
+  llamarBackend('cambiarEstadoFormularioConfigSA', [idFormulario, nuevoEstado])
+    .then(res => {
+      document.body.style.cursor = 'default';
+      if(res.success) {
+        mostrarMensaje('✅ Estado de formulario actualizado', 'success', 'superAdminState');
+        cargarModuloFormulariosSA();
+      }
+    });
 };
     </script>
   </body>
