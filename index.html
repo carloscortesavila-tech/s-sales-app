@@ -1484,68 +1484,94 @@ background:transparent;
       </div>
 
       <div id="panelSAAsignarAsesores" style="display: none;">
-        <div style="background: var(--bg-tint); border: 1px solid var(--border); padding: 20px; border-radius: var(--radius); margin-bottom: 20px;">
-          <h3 style="margin-bottom: 20px; color: var(--primary);"><i class="fas fa-user-shield"></i> Asignación de Asesores a Supervisor</h3>
-          <form id="formVincularAsesorSup">
-            <div class="action-grid two-columns" style="margin-top: 0;">
-              <div class="form-group">
-                <label>Seleccionar Supervisor *</label>
-                <select id="sa_select_supervisor" class="form-control" required></select>
-              </div>
-              <div class="form-group">
-                <label>Seleccionar Asesor *</label>
-                <select id="sa_select_asesor" class="form-control" required></select>
-              </div>
+        <div style="background: #e8f4fd; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+          <i class="fas fa-info-circle"></i>
+          <strong>Asignación de asesores a supervisores</strong>
+          <br>
+          <small>Seleccione un supervisor y luego los asesores que desea asignar</small>
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="saSelectSupervisor">Seleccionar Supervisor:</label>
+          <select id="saSelectSupervisor" class="form-control" onchange="cargarAsesoresDisponiblesSA()">
+            <option value="">-- Seleccione un supervisor --</option>
+          </select>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+          <h3 style="margin-bottom: 15px; font-size: 1.1rem;"><i class="fas fa-user-plus"></i> Asignación individual</h3>
+          <div style="display: flex; gap: 15px; align-items: flex-end;">
+            <div style="flex: 2;">
+              <label for="saSelectAsesorIndividual">Asesor a asignar:</label>
+              <select id="saSelectAsesorIndividual" class="form-control">
+                <option value="">-- Seleccione un asesor --</option>
+              </select>
             </div>
-            <div style="text-align: right; margin-top: 15px;">
-              <button type="submit" class="btn-primary" style="padding: 12px 24px; width: auto; background: #2563eb; color: #ffffff; border: 2px solid #1d4ed8; font-weight: bold; border-radius: 8px;">
-                <i class="fas fa-link"></i> ASIGNAR ASESOR
+            <div style="flex: 1;">
+              <button class="btn-primary" id="btnSAAsignarIndividual" style="padding: 14px 20px; width: 100%;">
+                <i class="fas fa-arrow-right"></i> Asignar
               </button>
             </div>
-          </form>
+          </div>
         </div>
-
-        <div class="table-container">
-          <table class="agendamientos-table" style="min-width: 600px;">
-            <thead>
-              <tr>
-                <th>ASESOR</th>
-                <th>SUPERVISOR ASIGNADO</th>
-                <th>ACCIONES</th>
-              </tr>
-            </thead>
-            <tbody id="tablaSAAsesoresRelacionBody"></tbody>
-          </table>
+        
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+          <h3 style="margin-bottom: 15px; font-size: 1.1rem;"><i class="fas fa-layer-group"></i> Asignación masiva</h3>
+          <div style="display: flex; gap: 15px; align-items: flex-start;">
+            <div style="flex: 2;">
+              <label for="saSelectAsesoresMasivos">Seleccionar asesores:</label>
+              <select id="saSelectAsesoresMasivos" class="form-control" multiple size="5" style="height: auto; min-height: 120px;">
+                <option value="">-- Seleccione asesores (Ctrl+Click para múltiple) --</option>
+              </select>
+              <small style="color: var(--gray);">Mantenga presionada la tecla Ctrl (Cmd en Mac) para seleccionar múltiples asesores</small>
+            </div>
+            <div style="flex: 1;">
+              <button class="btn-primary" id="btnSAAsignarMasivo" style="padding: 14px 20px; width: 100%;">
+                <i class="fas fa-users"></i> Asignar todos
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+          <h3 style="margin-bottom: 15px; font-size: 1.1rem;"><i class="fas fa-list"></i> Asesores asignados actualmente</h3>
+          <div id="listaSAAsesoresActuales" style="max-height: 200px; overflow-y: auto;">
+            <p style="color: var(--gray); text-align: center;">Seleccione un supervisor para ver sus asesores</p>
+          </div>
         </div>
       </div>
 
       <div id="panelSAFormularios" style="display: none;">
-        <div style="background: var(--bg-tint); border: 1px solid var(--border); padding: 20px; border-radius: var(--radius); margin-bottom: 20px;">
-          <h3 style="margin-bottom: 15px; color: var(--primary);"><i class="fas fa-plus-square"></i> Crear Nuevo Formulario</h3>
-          <form id="formSACrearFormulario">
-            <div class="form-group">
-              <label>Nombre del Formulario *</label>
-              <input type="text" id="sa_nombre_formulario" class="form-control" placeholder="Escriba el nombre del nuevo formulario..." required>
-            </div>
-            <div style="text-align: right; margin-top: 15px;">
-              <button type="submit" class="btn-primary" style="padding: 12px 24px; width: auto; background: #2563eb; color: #ffffff; border: 2px solid #1d4ed8; font-weight: bold; border-radius: 8px;">
-                <i class="fas fa-plus-circle"></i> CREAR FORMULARIO
-              </button>
-            </div>
-          </form>
+        <div style="background: #e8f4fd; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+          <i class="fas fa-info-circle"></i>
+          <strong>Gestión de formularios disponibles</strong>
+          <br>
+          <small>Active/desactive formularios y asigne permisos por rol</small>
         </div>
-
-        <div class="table-container">
-          <table class="agendamientos-table" style="min-width: 600px;">
+        
+        <div style="margin-bottom: 20px; text-align: right;">
+          <button class="btn-primary" id="btnSANuevoFormulario" style="padding: 10px 20px; width: auto;">
+            <i class="fas fa-plus"></i> CREAR NUEVO FORMULARIO
+          </button>
+        </div>
+        
+        <div class="table-container" style="margin-bottom: 20px;">
+          <table class="agendamientos-table" style="min-width: 800px;">
             <thead>
               <tr>
                 <th>ID</th>
-                <th>NOMBRE DEL FORMULARIO</th>
+                <th>NOMBRE</th>
+                <th>DESCRIPCIÓN</th>
+                <th>TIPO</th>
                 <th>ESTADO</th>
-                <th>ACCIONES</th>
+                <th>ROLES PERMITIDOS</th>
+                <th>ORDEN</th>
+                <th>REQUERIR VISITA</th>
               </tr>
             </thead>
-            <tbody id="tablaSAFormulariosBody"></tbody>
+            <tbody id="tablaSAFormulariosBody">
+              <tr><td colspan="8" style="text-align: center; padding: 40px;"><i class="fas fa-spinner fa-spin" style="font-size: 2rem;"></i><p>Cargando formularios...</p></td></tr>
+            </tbody>
           </table>
         </div>
       </div>
@@ -10722,6 +10748,11 @@ function mostrarAgendamientosSupervision(registros) {
 // =====================================================================
 
 // Gestión de Pestañas
+// =====================================================================
+// ====== FUNCIONES EXCLUSIVAS SUPERADMIN: ASIGNAR ASESORES & FORMULARIOS =========
+// =====================================================================
+
+// Gestión de Pestañas SuperAdmin
 function iniciarTabsSuperAdmin() {
   const tabs = ['tabSAUsuarios', 'tabSAClientes', 'tabSAAsignar', 'tabSAAsignarAsesores', 'tabSAFormularios'];
   const paneles = ['panelSAUsuarios', 'panelSAClientes', 'panelSAAsignar', 'panelSAAsignarAsesores', 'panelSAFormularios'];
@@ -10753,460 +10784,189 @@ function iniciarTabsSuperAdmin() {
 
   document.getElementById('tabSAAsignarAsesores')?.addEventListener('click', function() {
     alternarPanel('tabSAAsignarAsesores', 'panelSAAsignarAsesores');
-    cargarModuloAsignarAsesoresSA();
+    cargarSupervisoresSA();
   });
 
   document.getElementById('tabSAFormularios')?.addEventListener('click', function() {
     alternarPanel('tabSAFormularios', 'panelSAFormularios');
-    cargarModuloFormulariosSA();
+    cargarFormulariosSA();
   });
 }
 
-// Botón de Volver
-document.getElementById('backFromSuperAdmin')?.addEventListener('click', function() {
-  cambiarEstado('superAdminState', 'welcomeState', 'izquierda');
-});
+// --- CONTROLADOR SUPERADMIN: ASIGNAR ASESORES (Reutiliza backend del Admin) ---
 
-// Cargar y mostrar todos los usuarios
-let usuariosGlobalesSA = [];
-function cargarUsuariosSuperAdmin() {
-  document.getElementById('tablaSAUsuariosBody').innerHTML = '<tr><td colspan="6" style="text-align: center;"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>';
-  
-  llamarBackend('obtenerTodosLosUsuarios', []) 
-    .then(response => {
+function cargarSupervisoresSA() {
+  llamarBackend('obtenerSupervisores', [])
+    .then(function(response) {
       if (response.success) {
-        usuariosGlobalesSA = response.usuarios;
-        renderizarTablaUsuariosSA(usuariosGlobalesSA);
-        const selectSup = document.getElementById('nu_supervisor');
-        if (selectSup) {
-          selectSup.innerHTML = '<option value="">Sin supervisor</option>';
-          response.usuarios.filter(u => u.rol.toUpperCase() === 'SUPERVISOR').forEach(sup => {
-            selectSup.innerHTML += `<option value="${sup.usuario}">${sup.nombre}</option>`;
+        const select = document.getElementById('saSelectSupervisor');
+        let options = '<option value="">-- Seleccione un supervisor --</option>';
+        response.supervisores.forEach(function(sup) {
+          options += `<option value="${sup.usuario}">${sup.nombre} (${sup.usuario})</option>`;
+        });
+        select.innerHTML = options;
+      } else {
+        mostrarMensaje('Error cargando supervisores', 'error', 'superAdminState');
+      }
+    });
+}
+
+window.cargarAsesoresDisponiblesSA = function() {
+  const supervisor = document.getElementById('saSelectSupervisor').value;
+  
+  if (!supervisor) {
+    document.getElementById('saSelectAsesorIndividual').innerHTML = '<option value="">-- Seleccione un supervisor primero --</option>';
+    document.getElementById('saSelectAsesoresMasivos').innerHTML = '<option value="">-- Seleccione un supervisor primero --</option>';
+    document.getElementById('listaSAAsesoresActuales').innerHTML = '<p style="color: var(--gray); text-align: center;">Seleccione un supervisor para ver sus asesores</p>';
+    return;
+  }
+  
+  document.getElementById('listaSAAsesoresActuales').innerHTML = '<p style="text-align: center;"><i class="fas fa-spinner fa-spin"></i> Cargando...</p>';
+  
+  llamarBackend('obtenerAsesoresParaSupervisor', [supervisor])
+    .then(function(response) {
+      if (response.success) {
+        let individualOptions = '<option value="">-- Seleccione un asesor --</option>';
+        let masivoOptions = '';
+        response.asesoresDisponibles.forEach(function(asesor) {
+          individualOptions += `<option value="${asesor.usuario}">${asesor.nombre} (${asesor.usuario})</option>`;
+          masivoOptions += `<option value="${asesor.usuario}">${asesor.nombre} (${asesor.usuario})</option>`;
+        });
+        document.getElementById('saSelectAsesorIndividual').innerHTML = individualOptions;
+        document.getElementById('saSelectAsesoresMasivos').innerHTML = masivoOptions;
+        
+        let html = '<div style="display: flex; flex-direction: column; gap: 10px;">';
+        if (response.asesoresAsignados.length === 0) {
+          html += '<p style="color: var(--gray); text-align: center;">No hay asesores asignados a este supervisor</p>';
+        } else {
+          response.asesoresAsignados.forEach(function(asesor) {
+            html += `
+              <div style="background: white; padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--gray-light);">
+                <div><strong>${asesor.nombre}</strong><br><small style="color: var(--gray);">${asesor.usuario}</small></div>
+                <button onclick="removerAsesorSA('${supervisor}', '${asesor.usuario}')" style="padding: 5px 10px; background: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                  <i class="fas fa-trash"></i> Remover
+                </button>
+              </div>
+            `;
           });
         }
+        html += '</div>';
+        document.getElementById('listaSAAsesoresActuales').innerHTML = html;
       }
     });
 }
 
-function renderizarTablaUsuariosSA(usuarios) {
-  const tbody = document.getElementById('tablaSAUsuariosBody');
-  if (!tbody) return;
-  let html = '';
-  usuarios.forEach(user => {
-    const estadoClass = user.activo === 'SI' ? 'estado-completado' : 'estado-cancelado';
-    html += `
-      <tr>
-        <td>${user.nit}</td>
-        <td><strong>${user.usuario}</strong></td>
-        <td>${user.nombre}</td>
-        <td>${user.rol}</td>
-        <td><span class="estado-badge ${estadoClass}">${user.activo === 'SI' ? 'Activo' : 'Inactivo'}</span></td>
-        <td>
-          <button class="btn-primary" onclick="toggleUsuarioSA('${user.usuario}', '${user.activo}')" 
-                  style="padding: 5px 10px; font-size: 0.8rem; background: ${user.activo === 'SI' ? '#dc3545' : '#10b981'};">
-            ${user.activo === 'SI' ? 'Desactivar' : 'Activar'}
-          </button>
-        </td>
-      </tr>
-    `;
-  });
-  tbody.innerHTML = html || '<tr><td colspan="6" style="text-align: center;">No hay usuarios.</td></tr>';
-}
-
-// Filtro de usuarios
-document.getElementById('buscadorSAUsuarios')?.addEventListener('input', function(e) {
-  const termino = e.target.value.toLowerCase();
-  const filtrados = usuariosGlobalesSA.filter(u => 
-    u.usuario.toLowerCase().includes(termino) || u.nombre.toLowerCase().includes(termino) || u.rol.toLowerCase().includes(termino)
-  );
-  renderizarTablaUsuariosSA(filtrados);
-});
-
-// Activar / Desactivar Usuario
-window.toggleUsuarioSA = function(usuario, estadoActual) {
-  const nuevoEstado = estadoActual === 'SI' ? false : true;
-  if (confirm(`¿Cambiar estado del usuario ${usuario}?`)) {
-    llamarBackend('cambiarEstadoUsuario', [usuario, nuevoEstado]) 
-      .then(response => {
-        if (response.success) {
-          mostrarMensaje('Estado actualizado', 'success', 'superAdminState');
-          cargarUsuariosSuperAdmin();
-        } else {
-          mostrarMensaje('Error: ' + response.mensaje, 'error', 'superAdminState');
-        }
-      });
-  }
-};
-
-// Modales Crear Usuario
-document.getElementById('btnSNCrearUsuario')?.addEventListener('click', function() {
-  document.getElementById('modalCrearUsuarioSA').style.display = 'flex';
-  document.getElementById('formCrearUsuarioSA').reset();
-  document.getElementById('nu_nit').value = '901199166'; // Forzado
-});
-
-document.getElementById('btnCerrarModalUserSA')?.addEventListener('click', function() {
-  document.getElementById('modalCrearUsuarioSA').style.display = 'none';
-});
-
-// Guardar Nuevo Usuario
-document.getElementById('formCrearUsuarioSA')?.addEventListener('submit', function(e) {
+document.getElementById('btnSAAsignarIndividual')?.addEventListener('click', function(e) {
   e.preventDefault();
+  const supervisor = document.getElementById('saSelectSupervisor').value;
+  const asesor = document.getElementById('saSelectAsesorIndividual').value;
+  if (!supervisor || !asesor) { mostrarMensaje('Seleccione supervisor y asesor', 'error', 'superAdminState'); return; }
   
-  const btn = e.target.querySelector('button[type="submit"]');
-  const textoOriginal = btn.innerHTML;
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
-  btn.disabled = true;
-
-  const datosNuevoUsuario = {
-    nit: '901199166',
-    usuario: document.getElementById('nu_usuario').value,
-    nombre: document.getElementById('nu_nombre').value,
-    contrasena: document.getElementById('nu_password').value,
-    rol: document.getElementById('nu_rol').value,
-    supervisor: document.getElementById('nu_supervisor').value,
-    correo: document.getElementById('nu_correo').value,
-    activo: document.getElementById('nu_activo').value,
-    fechaRegistro: new Date().toLocaleString('es-CO'),
-    secretCode: Math.floor(100000 + Math.random() * 900000).toString()
-  };
-
-  llamarBackend('crearUsuarioDesdeSuperAdmin', [datosNuevoUsuario])
-    .then(response => {
-      btn.innerHTML = textoOriginal;
-      btn.disabled = false;
-      if (response.success) {
-        alert(`Usuario creado exitosamente.\nSecret Code generado: ${datosNuevoUsuario.secretCode}`);
-        document.getElementById('modalCrearUsuarioSA').style.display = 'none';
-        cargarUsuariosSuperAdmin();
-      } else {
-        alert('Error al crear usuario: ' + response.mensaje);
-      }
-    }).catch(error => {
-      btn.innerHTML = textoOriginal;
-      btn.disabled = false;
-      alert('Error de red: ' + error.message);
+  if (confirm(`¿Asignar asesor ${asesor} al supervisor ${supervisor}?`)) {
+    llamarBackend('asignarAsesorASupervisor', [supervisor, asesor]).then(function(res) {
+      if(res.success) { mostrarMensaje('✅ Asesor asignado', 'success', 'superAdminState'); cargarAsesoresDisponiblesSA(); }
     });
+  }
 });
 
-// Crear Cliente Maestro
-document.getElementById('formCrearClienteMaestro')?.addEventListener('submit', function(e) {
+document.getElementById('btnSAAsignarMasivo')?.addEventListener('click', function(e) {
   e.preventDefault();
+  const supervisor = document.getElementById('saSelectSupervisor').value;
+  const selectAsesores = document.getElementById('saSelectAsesoresMasivos');
+  const asesores = Array.from(selectAsesores.selectedOptions).map(opt => opt.value);
+  if (!supervisor || asesores.length === 0) { mostrarMensaje('Seleccione datos', 'error', 'superAdminState'); return; }
   
-  const btn = e.target.querySelector('button[type="submit"]');
-  const textoOriginal = btn.innerHTML;
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
-  btn.disabled = true;
-
-  const datosCliente = {
-    usuario_cliente: document.getElementById('cc_usuario').value,
-    codigo_cliente: document.getElementById('cc_codigo').value,
-    identificacion_cliente: document.getElementById('cc_identificacion').value,
-    tipo_cliente: document.getElementById('cc_tipo').value,
-    nombre_cliente: document.getElementById('cc_nombre').value,
-    contacto_cliente: document.getElementById('cc_contacto').value,
-    telefono_cliente: document.getElementById('cc_telefono').value,
-    email_cliente: document.getElementById('cc_email').value,
-    direccion_cliente: document.getElementById('cc_direccion').value,
-    ciudad_cliente: document.getElementById('cc_ciudad').value,
-    pais_cliente: document.getElementById('cc_pais').value,
-    region: document.getElementById('cc_region').value,
-    latitud: document.getElementById('cc_latitud').value,
-    longitud: document.getElementById('cc_longitud').value
-  };
-
-  llamarBackend('crearClienteBaseMaestra', [datosCliente])
-    .then(response => {
-      btn.innerHTML = textoOriginal;
-      btn.disabled = false;
-      if (response.success) {
-        mostrarMensaje('✅ Cliente maestro creado', 'success', 'superAdminState');
-        document.getElementById('formCrearClienteMaestro').reset();
-        document.getElementById('cc_pais').value = 'Colombia';
-      } else {
-        mostrarMensaje('❌ Error: ' + response.mensaje, 'error', 'superAdminState');
-      }
-    }).catch(error => {
-      btn.innerHTML = textoOriginal;
-      btn.disabled = false;
-      mostrarMensaje('Error de conexión', 'error', 'superAdminState');
+  if (confirm(`¿Asignar ${asesores.length} asesor(es)?`)) {
+    llamarBackend('asignarAsesoresMasivo', [supervisor, asesores]).then(function(res) {
+      if(res.success) { mostrarMensaje('✅ Asesores asignados', 'success', 'superAdminState'); cargarAsesoresDisponiblesSA(); }
     });
+  }
 });
 
-// ===== CARGAR Y BUSCAR CLIENTES (NUEVO DISEÑO CON TARJETAS) =====
-let clientesMaestrosGlobales = [];
-
-function cargarSelectoresAsignacion() {
-  const selectUsu = document.getElementById('ac_usuario');
-  const contenedorClientes = document.getElementById('listaSAClientesMaestros');
-  
-  selectUsu.innerHTML = '<option value="">Cargando usuarios...</option>';
-  contenedorClientes.innerHTML = '<div style="text-align: center; padding: 30px; color: var(--gray);"><i class="fas fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 10px;"></i><br>Cargando clientes de la base maestra...</div>';
-
-  // 1. Cargar la lista de Usuarios
-  if (usuariosGlobalesSA && usuariosGlobalesSA.length > 0) {
-    let opts = '<option value="">-- Primero seleccione a qué usuario le va a asignar --</option>';
-    usuariosGlobalesSA.forEach(u => { opts += `<option value="${u.usuario}">${u.nombre} (${u.rol})</option>`; });
-    selectUsu.innerHTML = opts;
-  }
-
-  // 2. Cargar los clientes de la base maestra
-  llamarBackend('obtenerTodosLosClientesMaestros', [])
-    .then(response => {
-      if (response.success) {
-        clientesMaestrosGlobales = response.clientes;
-        renderizarClientesMaestrosSA(clientesMaestrosGlobales);
-      } else {
-        contenedorClientes.innerHTML = `<div style="color: #dc3545; text-align: center; padding: 20px;"><i class="fas fa-exclamation-triangle"></i> ${response.mensaje}</div>`;
-      }
-    }).catch(error => {
-      contenedorClientes.innerHTML = `<div style="color: #dc3545; text-align: center; padding: 20px;">Error de red al cargar clientes.</div>`;
+window.removerAsesorSA = function(supervisor, asesor) {
+  if (confirm(`¿Remover asesor ${asesor}?`)) {
+    llamarBackend('removerAsesorDeSupervisor', [supervisor, asesor]).then(function(res) {
+      if(res.success) { mostrarMensaje('✅ Asesor removido', 'success', 'superAdminState'); cargarAsesoresDisponiblesSA(); }
     });
-}
-
-function renderizarClientesMaestrosSA(clientes) {
-  const contenedor = document.getElementById('listaSAClientesMaestros');
-  
-  if (!clientes || clientes.length === 0) {
-    contenedor.innerHTML = '<div style="text-align: center; padding: 30px; color: var(--gray);"><i class="fas fa-search" style="font-size: 24px; margin-bottom: 10px;"></i><br>No se encontraron clientes con esa búsqueda.</div>';
-    return;
-  }
-  
-  let html = '<div style="display: flex; flex-direction: column; gap: 10px;">';
-  
-  // Limitar a los primeros 50 para no congelar el navegador, el usuario puede buscar para ver el resto
-  const clientesMostrados = clientes.slice(0, 50); 
-  
-  clientesMostrados.forEach(c => {
-    html += `
-      <div class="client-card" style="display: flex; justify-content: space-between; align-items: center; padding: 15px; margin: 0; background: #f8fafc; border: 1px solid #e2e8f0;">
-        <div>
-          <h4 style="margin: 0; color: var(--primary); font-size: 15px;"><i class="fas fa-store"></i> ${c.nombre}</h4>
-          <p style="margin: 5px 0 0 0; font-size: 13px; color: var(--text-light);">
-            <strong>Cód:</strong> ${c.codigo} | <strong>ID:</strong> ${c.identificacion || 'N/A'} | <strong>📍</strong> ${c.ciudad || 'N/A'}
-          </p>
-        </div>
-        <button onclick="asignarClienteDesdeBuscador('${c.codigo}')" class="btn-primary" style="padding: 8px 15px; width: auto; font-size: 12px; background: #2563eb; color: #ffffff; border: 2px solid #1d4ed8; border-radius: 20px; font-weight: bold;">
-  <i class="fas fa-link"></i> ASIGNAR
-</button>
-      </div>
-    `;
-  });
-  
-  if (clientes.length > 50) {
-    html += `<div style="text-align: center; padding: 10px; font-size: 12px; color: var(--gray);">Mostrando 50 de ${clientes.length} resultados. Usa el buscador para encontrar más.</div>`;
-  }
-  
-  html += '</div>';
-  contenedor.innerHTML = html;
-}
-
-// Evento de búsqueda en tiempo real
-document.getElementById('buscadorSAClientesMaestros')?.addEventListener('input', function(e) {
-  const term = e.target.value.toLowerCase().trim();
-  const filtrados = clientesMaestrosGlobales.filter(c => 
-    (c.nombre && c.nombre.toLowerCase().includes(term)) || 
-    (c.codigo && c.codigo.toLowerCase().includes(term)) ||
-    (c.identificacion && c.identificacion.toLowerCase().includes(term))
-  );
-  renderizarClientesMaestrosSA(filtrados);
-});
-
-// Función que se ejecuta al darle clic al botón "ASIGNAR" de la tarjeta
-window.asignarClienteDesdeBuscador = function(codigoCliente) {
-  const usuarioDestino = document.getElementById('ac_usuario').value;
-  
-  if (!usuarioDestino) {
-    alert('⚠️ Por favor seleccione primero el USUARIO (Asesor) en la lista desplegable de arriba.');
-    document.getElementById('ac_usuario').focus();
-    return;
-  }
-
-  if (confirm(`¿Está seguro de asignar el cliente con código ${codigoCliente} al usuario ${usuarioDestino}?`)) {
-    // Si tienes función de carga, úsala. Si no, cambiamos el cursor.
-    document.body.style.cursor = 'wait';
-    
-    llamarBackend('asignarClienteDirectoAUsuario', [usuarioDestino, codigoCliente])
-      .then(response => {
-        document.body.style.cursor = 'default';
-        if (response.success) {
-          mostrarMensaje('✅ Cliente asignado correctamente a la lista del asesor', 'success', 'superAdminState');
-          document.getElementById('buscadorSAClientesMaestros').value = ''; // Limpiar
-          renderizarClientesMaestrosSA(clientesMaestrosGlobales); // Restaurar lista
-        } else {
-          mostrarMensaje('❌ Error: ' + response.mensaje, 'error', 'superAdminState');
-        }
-      }).catch(error => {
-        document.body.style.cursor = 'default';
-        mostrarMensaje('Error de conexión', 'error', 'superAdminState');
-      });
-  }
-};
-
-      // Funciones ejecutoras del SuperAdmin en la pestaña Supervisión
-window.cambiarEstadoAgendamientoSA = function(usuarioAsesor, codigoCliente, fecha, hora, nuevoEstado) {
-  document.body.style.cursor = 'wait';
-  llamarBackend('actualizarEstadoAgendamientoDesdeSA', [usuarioAsesor, codigoCliente, fecha, hora, nuevoEstado])
-    .then(response => {
-      document.body.style.cursor = 'default';
-      if (response.success) {
-        mostrarMensaje('✅ Estado de agendamiento actualizado', 'success', 'supervisionState');
-        cargarDatosAgendamientos(); // Recargar la lista en tiempo real
-      } else {
-        alert('Error: ' + response.mensaje);
-      }
-    }).catch(() => { document.body.style.cursor = 'default'; alert('Error de conexión'); });
-};
-
-window.iniciarVisitaDesdeSA = function(usuarioAsesor, codigoCliente, fecha, hora) {
-  if (confirm(`¿Marcar la visita como INICIADA (SI) para el asesor ${usuarioAsesor}?`)) {
-    document.body.style.cursor = 'wait';
-    llamarBackend('iniciarVisitaDesdeSA', [usuarioAsesor, codigoCliente, fecha, hora])
-      .then(response => {
-        document.body.style.cursor = 'default';
-        if (response.success) {
-          mostrarMensaje('✅ Visita forzada a SI correctamente', 'success', 'supervisionState');
-          cargarDatosAgendamientos(); // Recargar lista
-        } else {
-          alert('Error: ' + response.mensaje);
-        }
-      }).catch(() => { document.body.style.cursor = 'default'; alert('Error de conexión'); });
-  }
-};
-
-// =====================================================================
-// ====== FUNCIONES EXCLUSIVAS: ASIGNAR ASESORES & FORMULARIOS =========
-// =====================================================================
-
-// --- CONTROLADOR: ASIGNAR ASESORES ---
-function cargarModuloAsignarAsesoresSA() {
-  const selSup = document.getElementById('sa_select_supervisor');
-  const selAse = document.getElementById('sa_select_asesor');
-  const tbody = document.getElementById('tablaSAAsesoresRelacionBody');
-  
-  if(!selSup || !selAse || !tbody) return;
-  
-  selSup.innerHTML = '<option value="">Cargando supervisores...</option>';
-  selAse.innerHTML = '<option value="">Cargando asesores...</option>';
-  tbody.innerHTML = '<tr><td colspan="3" style="text-align: center;"><i class="fas fa-spinner fa-spin"></i> Sincronizando datos...</td></tr>';
-
-  if (usuariosGlobalesSA && usuariosGlobalesSA.length > 0) {
-    let optSup = '<option value="">-- Seleccione Supervisor --</option>';
-    let optAse = '<option value="">-- Seleccione Asesor --</option>';
-    
-    usuariosGlobalesSA.forEach(u => {
-      if(u.rol.toUpperCase() === 'SUPERVISOR') optSup += `<option value="${u.usuario}">${u.nombre}</option>`;
-      if(u.rol.toUpperCase() === 'ASESOR') optAse += `<option value="${u.usuario}">${u.nombre}</option>`;
-    });
-    
-    selSup.innerHTML = optSup;
-    selAse.innerHTML = optAse;
-    
-    let htmlTabla = '';
-    usuariosGlobalesSA.filter(u => u.rol.toUpperCase() === 'ASESOR').forEach(ase => {
-      htmlTabla += `
-        <tr>
-          <td><strong>${ase.nombre}</strong> (${ase.usuario})</td>
-          <td>${ase.supervisor ? `<i class="fas fa-user-tie"></i> ${ase.supervisor}` : '<span class="estado-badge estado-cancelado" style="background: rgba(245,158,11,0.1); color:#f59e0b; padding:4px 8px;">Sin Supervisor</span>'}</td>
-          <td>
-            <button onclick="quitarSupervisorAsesorSA('${ase.usuario}')" class="btn-primary" style="padding: 6px 12px; font-size: 12px; background: #dc3545; color: white; border: none; width: auto; border-radius: 6px; font-weight: bold;" ${!ase.supervisor ? 'disabled style="background:#cbd5e1; cursor:not-allowed;"' : ''}>
-              <i class="fas fa-user-minus"></i> Quitar
-            </button>
-          </td>
-        </tr>
-      `;
-    });
-    tbody.innerHTML = htmlTabla || '<tr><td colspan="3" style="text-align:center;">No se encontraron asesores registrados.</td></tr>';
   }
 }
 
-document.getElementById('formVincularAsesorSup')?.addEventListener('submit', function(e) {
-  e.preventDefault();
-  const supervisor = document.getElementById('sa_select_supervisor').value;
-  const asesor = document.getElementById('sa_select_asesor').value;
-  
-  document.body.style.cursor = 'wait';
-  llamarBackend('vincularAsesorASupervisorSA', [asesor, supervisor])
-    .then(res => {
-      document.body.style.cursor = 'default';
-      if(res.success) {
-        mostrarMensaje('✓ Asesor asignado correctamente', 'success', 'superAdminState');
-        llamarBackend('obtenerTodosLosUsuarios', []).then(r => { if(r.success) { usuariosGlobalesSA = r.usuarios; cargarModuloAsignarAsesoresSA(); } });
-      } else { alert('Error: ' + res.mensaje); }
-    });
-});
+// --- CONTROLADOR SUPERADMIN: FORMULARIOS (Abre el mismo modal de Admin) ---
 
-window.quitarSupervisorAsesorSA = function(usuarioAsesor) {
-  if(confirm('¿Está seguro de remover la asignación de supervisor para este asesor?')) {
-    document.body.style.cursor = 'wait';
-    llamarBackend('vincularAsesorASupervisorSA', [usuarioAsesor, '']) 
-      .then(res => {
-        document.body.style.cursor = 'default';
-        if(res.success) {
-          mostrarMensaje('✓ Supervisor removido con éxito', 'success', 'superAdminState');
-          llamarBackend('obtenerTodosLosUsuarios', []).then(r => { if(r.success) { usuariosGlobalesSA = r.usuarios; cargarModuloAsignarAsesoresSA(); } });
-        }
-      });
-  }
-};
-
-// --- CONTROLADOR: FORMULARIOS ---
-function cargarModuloFormulariosSA() {
+function cargarFormulariosSA() {
   const tbody = document.getElementById('tablaSAFormulariosBody');
   if(!tbody) return;
-  tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;"><i class="fas fa-spinner fa-spin"></i> Cargando configuración de formularios...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px;"><i class="fas fa-spinner fa-spin" style="font-size: 2rem;"></i><p>Cargando formularios...</p></td></tr>';
 
-  llamarBackend('obtenerListaFormulariosCompletaSA', [])
-    .then(res => {
-      if(res.success) {
+  llamarBackend('obtenerFormulariosConfig', [])
+    .then(function(response) {
+      if (response.success) {
+        formulariosLista = response.formularios; // Usar variable global del admin
         let html = '';
-        res.formularios.forEach(f => {
-          const estaActivo = String(f.estado).toUpperCase() === 'ACTIVO' || f.estado === true;
+        formulariosLista.forEach(function(form) {
+          const activoClass = form.activo === 'SI' ? 'estado-completado' : 'estado-cancelado';
+          const requiereText = form.requiere_visita === 'SI' ? '✅ Sí' : '❌ No';
           html += `
             <tr>
-              <td><code>${f.id}</code></td>
-              <td><strong>${f.nombre}</strong></td>
-              <td><span class="estado-badge ${estaActivo ? 'estado-completado' : 'estado-cancelado'}">${estaActivo ? 'ACTIVO' : 'INACTIVO'}</span></td>
+              <td>${form.id}</td>
+              <td><strong>${form.nombre}</strong></td>
+              <td>${form.descripcion || '-'}</td>
+              <td><span class="estado-badge">${form.tipo === 'core' ? '📌 Core' : '✏️ Personalizado'}</span></td>
+              <td><span class="estado-badge ${activoClass}">${form.activo}</span></td>
+              <td>${form.roles_permitidos || '-'}</td>
+              <td>${form.orden || '-'}</td>
               <td>
-                <button onclick="cambiarEstadoFormularioSA('${f.id}', '${estaActivo ? 'INACTIVO' : 'ACTIVO'}')" class="btn-primary" style="padding: 6px 12px; width: auto; font-size: 12px; background: ${estaActivo ? '#dc3545' : '#10b981'}; color: white; border: none; border-radius: 6px; font-weight: bold;">
-                  <i class="fas ${estaActivo ? 'fa-toggle-on' : 'fa-toggle-off'}"></i> ${estaActivo ? 'Desactivar' : 'Activar'}
+                <button class="btn-primary" onclick="editarFormulario(${form.id})" style="padding: 5px 10px; font-size: 0.8rem; margin-right: 5px;">
+                  <i class="fas fa-edit"></i> Editar
+                </button>
+                <button class="btn-logout" onclick="toggleFormularioEstado(${form.id}, '${form.activo}')" style="padding: 5px 10px; font-size: 0.8rem; ${form.activo === 'SI' ? 'background: #dc3545; color: white;' : 'background: #28a745; color: white;'}">
+                  ${form.activo === 'SI' ? 'Desactivar' : 'Activar'}
                 </button>
               </td>
             </tr>
           `;
         });
-        tbody.innerHTML = html || '<tr><td colspan="4" style="text-align:center;">No hay formularios configurados.</td></tr>';
-      } else { tbody.innerHTML = `<tr><td colspan="4" style="color:red; text-align:center;">${res.mensaje}</td></tr>`; }
+        tbody.innerHTML = html || '<tr><td colspan="8" style="text-align:center;">No hay formularios.</td></tr>';
+      }
     });
 }
 
-document.getElementById('formSACrearFormulario')?.addEventListener('submit', function(e) {
-  e.preventDefault();
-  const nombreForm = document.getElementById('sa_nombre_formulario').value;
+document.getElementById('btnSANuevoFormulario')?.addEventListener('click', function() {
+  // Abre EXACTAMENTE EL MISMO MODAL que usa el Administrador
+  document.getElementById('modalFormularioTitle').innerHTML = '<i class="fas fa-plus"></i> Nuevo Formulario';
+  document.getElementById('formularioId').value = '';
+  document.getElementById('formNombre').value = '';
+  document.getElementById('formDescripcion').value = '';
+  document.getElementById('formTipo').value = 'custom';
+  document.getElementById('formActivo').value = 'SI';
+  document.getElementById('formOrden').value = '99';
+  document.getElementById('formRequiereVisita').checked = false;  
   
-  document.body.style.cursor = 'wait';
-  llamarBackend('crearNuevoFormularioConfigSA', [nombreForm])
-    .then(res => {
-      document.body.style.cursor = 'default';
-      if(res.success) {
-        mostrarMensaje('✓ Formulario creado exitosamente', 'success', 'superAdminState');
-        document.getElementById('sa_nombre_formulario').value = '';
-        cargarModuloFormulariosSA();
-      } else { alert('Error: ' + res.mensaje); }
-    });
+  const selectRoles = document.getElementById('formRoles');
+  for (let i = 0; i < selectRoles.options.length; i++) selectRoles.options[i].selected = false;
+  
+  camposTemporales = [];
+  renderizarCampos(); 
+  document.getElementById('modalFormulario').style.display = 'flex';
 });
 
-window.cambiarEstadoFormularioSA = function(idFormulario, nuevoEstado) {
-  document.body.style.cursor = 'wait';
-  llamarBackend('cambiarEstadoFormularioConfigSA', [idFormulario, nuevoEstado])
-    .then(res => {
-      document.body.style.cursor = 'default';
-      if(res.success) {
-        mostrarMensaje('✓ Estado del formulario modificado', 'success', 'superAdminState');
-        cargarModuloFormulariosSA();
-      }
+// Anclamos la recarga a la función del Admin para que cuando guarde desde el SuperAdmin, se actualice la tabla del SuperAdmin
+const btnCerrarForm = document.getElementById('btnCerrarModalForm');
+if(btnCerrarForm) {
+    btnCerrarForm.addEventListener('click', function() {
+        if(document.getElementById('superAdminState').classList.contains('active')){
+            cargarFormulariosSA();
+        }
     });
-};
+}
+document.getElementById('formFormulario').addEventListener('submit', function() {
+    setTimeout(function() {
+        if(document.getElementById('superAdminState').classList.contains('active')){
+            cargarFormulariosSA();
+        }
+    }, 1500);
+});
+
 </script>
 </body>
 </html>
