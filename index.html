@@ -2425,7 +2425,7 @@ function actualizarMenuPorRol() {
       </a>
   `;
   
-  // 1. SI ES SUPERADMIN
+// 1. SI ES SUPERADMIN (REEMPLAZAR ESTE BLOQUE)
   if (rolUsuario === 'SUPERADMIN') {
     actionGrid.innerHTML = `
       <a href="#" class="action-btn btn-admin" id="btnSuperAdmin" style="border-color: #10b981;">
@@ -2435,6 +2435,10 @@ function actualizarMenuPorRol() {
       <a href="#" class="action-btn btn-supervisar" id="btnSupervisar">
         <i class="fas fa-eye"></i> SUPERVISAR
         <small>Ver todos los informes</small>
+      </a>
+      <a href="#" class="action-btn btn-reports" id="btnReports">
+        <i class="fas fa-chart-bar"></i> INFORMES
+        <small>Descargas Masivas Excel/PDF</small>
       </a>
     `;
     
@@ -2451,7 +2455,7 @@ function actualizarMenuPorRol() {
         });
       }
     }, 100);
-  } 
+  }
   // 2. SI ES ADMIN NORMAL
   else if (rolUsuario === 'ADMIN') {
     actionGrid.innerHTML = `
@@ -4458,14 +4462,14 @@ function cargarRegistrosInforme(forzarRecarga = true) {
     console.log('🔄 Forzando recarga de datos desde el servidor...');
   }
   
-  // Llamar a la función correspondiente según el rol y tipo de formulario
-  if (userData.rol === 'ADMIN' || userData.rol === 'SUPERVISOR') {
-    // ADMIN o SUPERVISOR: ver todos los informes
-    console.log('📞 ADMIN/SUPERVISOR: Usando obtenerTodosLosInformes');
+  // 🔥 CORRECCIÓN AQUÍ: Se añade "|| userData.rol === 'SUPERADMIN'" para dar permisos globales
+  if (userData.rol === 'ADMIN' || userData.rol === 'SUPERVISOR' || userData.rol === 'SUPERADMIN') {
+    // ADMIN, SUPERVISOR o SUPERADMIN: ver todos los informes globales
+    console.log('📞 Permiso global concedido a: ' + userData.rol);
     llamarBackend('obtenerTodosLosInformes', [tipo]).then(procesarRespuesta).catch(manejarError);
   } 
   else {
-    // ASESOR: ver solo sus informes
+    // ASESOR: ver solo sus informes individuales
     console.log('📞 ASESOR: Usando función correspondiente');
     
     if (esFormularioCore) {
